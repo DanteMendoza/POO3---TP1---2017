@@ -1,0 +1,20 @@
+
+NOTA DE FUNCIONAMIENTO:
+
+1 Importamos las librerias JARs a nuestro proyecto, las cuales se encuentran en la carpeta "lib":
+
+mysql-connector-java-5.1.40-bin
+postgresql-9.4.1212.jre6
+
+
+2 Creamos en PostgreSQL o MySql una base de datos llamada "CHAT" con mayusculas.
+
+
+3 En la carpeta "model" se encuentra el script de creacion de las tablas de la base de datos para ser usada en PostgreSQL o MySql.
+Para simplificar las cosas se creo una tabla llamada "usuarios" con un solo 2 campos llamado id_usuario_PK y nombre_usuario
+en donde se encuentran los usuarios registrados.
+
+4 en el paquete jdbc esta la clase armada de conexion y una clase de prueba.
+
+
+
