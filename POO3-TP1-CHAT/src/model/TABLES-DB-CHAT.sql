@@ -6,8 +6,8 @@
 --DROP TABLE IF EXISTS usuarios;
 
 CREATE TABLE IF NOT EXISTS usuarios (
-  id_usuario_PK bigserial NOT NULL,
-  nombre_usuario  VARCHAR NULL,
+  id_usuario_PK int NOT NULL,
+  nombre_usuario VARCHAR NULL,
   PRIMARY KEY (id_usuario_PK) 
 );
 
