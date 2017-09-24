@@ -16,6 +16,7 @@ public class Cliente extends Thread {
     public Cliente(int id) {
         this.id = id;
         switch (this.id) {
+	//este switch varía los mensajes que va a enviar a cada cliente en base a su ID. 		
         case 0: 
         	this.mensaje = "CO";
         	break;
@@ -46,7 +47,7 @@ public class Cliente extends Thread {
             sk = new Socket("127.0.0.1", puerto);
             dos = new DataOutputStream(sk.getOutputStream());
             dis = new DataInputStream(sk.getInputStream());
-            System.out.println("Cliente " + id + " env�a comando: " + this.mensaje);
+            System.out.println("Cliente " + id + " envía comando: " + this.mensaje);
             dos.writeUTF(this.mensaje);
             String respuesta="";
             respuesta = dis.readUTF();
@@ -60,11 +61,13 @@ public class Cliente extends Thread {
     }
 
     public static void main(String[] args) throws InterruptedException {
-    	
+    	//lista de hilos para manejar los clientes
         ArrayList<Thread> clients = new ArrayList<>();
+	//bucle para añadir los clientes e inicializarlos
         for (int i = 0; i < 5; i++) {
             clients.add(new Cliente(i));
         }
+	//inicio cada hilo, el join es para que cada hilo reciba una respuesta del server antes de que arranque otro    
         for (Thread thread : clients) {
             thread.start();
             thread.join();
