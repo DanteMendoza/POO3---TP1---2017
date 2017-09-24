@@ -1,13 +1,15 @@
 package jdbc;
 
 import java.sql.*;
+import java.util.ArrayList;
+import domain.Usuarios;
 
 public class ConexionDB {
     private static Connection conexion = null;
     private static String bd = "CHAT"; // Nombre de BD.
     private static String user = "postgres"; // Usuario de BD.
     private static String password = "1234"; // Password de BD.
-    // Driver para MySQL en este caso.
+    // Driver a ser utilizado.
     private static String driver = "org.postgresql.Driver"; // Si usas PostgreSQL.
     //private static String driver = "com.mysql.jdbc.Driver"; // Si usas Mysql.
     // Ruta del servidor.
@@ -18,30 +20,35 @@ public class ConexionDB {
     	
     }
  
-    public void recuperarUsuarios(String cadena) throws SQLException {
+    public ArrayList<Usuarios> recuperarUsuarios(String cadena) throws SQLException {
  
-        System.out.println("INICIO DE EJECUCIÓN.");
+        System.out.println("INICIO DE RECUPERAR USUARIOS.");
+        ArrayList <Usuarios> arrayUsuarios = new ArrayList <Usuarios>();
+        Usuarios usuario;
         conectar();
         Statement st = conexion();
  
         // Se sacan los datos de la tabla usuarios
-        ResultSet rs = consultaQuery(st, cadena);
+        ResultSet rs = consultaQuery (st, cadena);
         if (rs != null) {
             System.out.println("El listado de usuarios es el siguiente:");
  
             while (rs.next()) {
-                System.out.println("  ID: " + rs.getObject("id_usuario_PK")); 
-                System.out.println("  Nombre usuario: " + rs.getObject("nombre_usuario"));
-                System.out.println("- ");
+            	usuario = new Usuarios();
+            	usuario.setId_usuario_PK( (int) rs.getObject("id_usuario_PK"));
+            	usuario.setNombre_usuario( (String)  rs.getObject("nombre_usuario"));
+            	arrayUsuarios.add(usuario);
             }
             cerrar(rs);
         }
         cerrar(st);
-        System.out.println("FIN DE EJECUCIÓN.");
+        System.out.println("FIN DE RECUPERAR USUARIOS.");
+        
+        return arrayUsuarios;
     }
  
     /**
-     * Método neecesario para conectarse al Driver y poder usar MySQL.
+     * Método neecesario para conectarse al Driver y poder usar MySQL o PostgreSQL.
      */
     public void conectar() {
         try {
