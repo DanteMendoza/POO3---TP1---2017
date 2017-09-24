@@ -30,7 +30,7 @@ public class ServidorHilo extends Thread {
         String accion = "";
         try {
             accion = dis.readUTF();
-            //logica de resolucion de comandos
+            //logica de resolucion de comandos...falta todavia que resuelva los parametros...
             if(accion.equals("CO")){
                 //System.out.println("El cliente con idSesion "+this.idSessio+" saluda");
                 dos.writeUTF("establesco conexion al server");
