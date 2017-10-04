@@ -15,9 +15,35 @@ public class ConexionDB {
     // Ruta del servidor.
     private static String server = "jdbc:postgresql://localhost/" + bd; // Si usas PostgreSQL.
     //private static String server = "jdbc:mysql://localhost/" + bd; // Si usas Mysql.
+    private static ConexionDB conexionDB = null;
     
-    public ConexionDB (){
+    // El constructor es privado, no permite que se genere un constructor por defecto.
+    // Esto es para usar el patron singleton.
+    private ConexionDB (){
     	
+    }
+    
+    public static ConexionDB getConexionDB(){
+    	if (conexionDB == null){
+    		conexionDB = new ConexionDB();
+    	}
+    	else {
+    		System.out.println("NO SE PUEDE CREAR conexionDB POR QUE YA EXISTE UN OBJETO DE LA MISMA CLASE!");
+    	}
+    	
+    	return conexionDB;
+    }
+    
+    // Sobreescribimos el método clone, para que no se pueda clonar un objeto de esta clase.
+    // Con esto garantizamos que habra un unico elemento y por ende se respeta el patron singleton.
+    @Override
+    public ConexionDB clone(){
+        try {
+            throw new CloneNotSupportedException();
+        } catch (CloneNotSupportedException ex) {
+            System.out.println("No se puede clonar un objeto de la clase ConexionDB");
+        }
+        return null; 
     }
  
     public ArrayList<Usuarios> recuperarUsuarios(String cadena) throws SQLException {

@@ -9,7 +9,9 @@ public class TestConexionDB {
 
 	public static void main(String[] args) throws SQLException {
 		String cadena = "SELECT * FROM usuarios;";
-		ArrayList <Usuarios> arrayUsuarios = new ConexionDB().recuperarUsuarios(cadena);
+		// 
+		ConexionDB conexionDB = ConexionDB.getConexionDB();
+		ArrayList <Usuarios> arrayUsuarios = conexionDB.recuperarUsuarios(cadena);
 		System.out.println(arrayUsuarios);
 
 	}
