@@ -12,13 +12,5 @@ public class Test {
 		Servidor s2 = Servidor.crear();
 		s2.iniciar();
 		
-		
-		/*
-		String cadena = "SELECT * FROM usuarios;";
-		// 
-		ConexionDB conexionDB = ConexionDB.getConexionDB();
-		ArrayList <Usuarios> arrayUsuarios = conexionDB.recuperarUsuarios(cadena);
-		System.out.println(arrayUsuarios);
-		*/
 	}
 }

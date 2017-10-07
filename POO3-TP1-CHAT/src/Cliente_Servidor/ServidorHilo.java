@@ -74,10 +74,13 @@ public class ServidorHilo extends Thread {
 		}
     }
     
-    //Nuevo comando para devolver por la consola en telnet, la lista de usuarios de la bdd
-    private void consultarUsuarios(String cadena) throws SQLException {
+    //Nuevo comando para devolver por la consola en telnet, la lista de usuarios de la bdd Comando: QC
+    private void consultarUsuarios(String cadena) throws SQLException, IOException {
     	ArrayList <Usuarios> arrayUsuarios = Servidor.conexionDB.recuperarUsuarios(cadena);
-    	dos.writeUTF(arrayUsuarios.get(2));
+    	for(int i=0; i< arrayUsuarios.size(); i++) {
+    		dos.writeUTF(arrayUsuarios.get(i).getNombre_usuario() + " ");
+    		dos.writeUTF(arrayUsuarios.get(i).getId_usuario_PK() + "\n");
+    	}
     }
     
     //Comando: EX
@@ -132,7 +135,12 @@ public class ServidorHilo extends Thread {
             	
         		}else if(this.accion.equals("QC")) {
                 	
-            		this.consultarUsuarios();
+            		try {
+						this.consultarUsuarios("SELECT * FROM usuarios;");
+						
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
                 	
             	}else {
             	
