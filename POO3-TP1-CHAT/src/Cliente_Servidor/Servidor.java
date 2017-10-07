@@ -13,11 +13,13 @@ public class Servidor {
 	private ServerSocket ss;
 	private int idSession;
 	private static Servidor x = null;
+	public static ConexionDB conexionDB = ConexionDB.getConexionDB(); //accede de forma estatica a la conexion de la bdd
 	
 	//Constructor privado
 	private Servidor(int puerto) {
 		this.idSession = 0;
 		this.puerto = puerto;
+		//this.conexionDB = ConexionDB.getConexionDB();
 	}
 
 	//Creo la única instancia
@@ -32,6 +34,10 @@ public class Servidor {
 	
 	public int getPuerto() {
 		return this.puerto;
+	}
+	
+	public static ConexionDB getConexionDB() {
+		return conexionDB;
 	}
 	
 	public void iniciar() {

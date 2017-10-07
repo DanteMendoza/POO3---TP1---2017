@@ -3,6 +3,8 @@ package v6;
 
 import java.io.*;
 import java.net.*;
+import java.sql.SQLException;
+import java.util.ArrayList;
 //import java.util.ArrayList;
 import java.util.logging.*;
 
@@ -72,6 +74,12 @@ public class ServidorHilo extends Thread {
 		}
     }
     
+    //Nuevo comando para devolver por la consola en telnet, la lista de usuarios de la bdd
+    private void consultarUsuarios(String cadena) throws SQLException {
+    	ArrayList <Usuarios> arrayUsuarios = Servidor.conexionDB.recuperarUsuarios(cadena);
+    	dos.writeUTF(arrayUsuarios.get(2));
+    }
+    
     //Comando: EX
     private void desconectar(Socket unSoc) {
         try {
@@ -122,7 +130,11 @@ public class ServidorHilo extends Thread {
         			this.desconectar(this.socket);
         			conectado = false;
             	
-        		}else {
+        		}else if(this.accion.equals("QC")) {
+                	
+            		this.consultarUsuarios();
+                	
+            	}else {
             	
         			dos.writeUTF("#no entiendo el comando: " + this.accion + "\n");
             	
