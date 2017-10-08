@@ -42,7 +42,9 @@ public class ServidorHilo extends Thread {
     //Comando: UN -username
     private void nombreUser() {
     	try {
-			dos.writeUTF("#registro el username: " + this.accion.substring(4, this.accion.length()) + "\n");
+    		String aux = this.accion.substring(4, this.accion.length());
+			this.server.getConexionDB().consultaActualiza("INSERT INTO usuarios(id_usuario_PK, nombre_usuario) VALUES (1006, \'" + aux + "\');");
+			dos.writeUTF("#registro el username: " + aux + "\n");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
