@@ -47,7 +47,6 @@ public class ConexionDB {
     }
  
     public ArrayList<Usuarios> recuperarUsuarios(String cadena) throws SQLException {
- 
         System.out.println("INICIO DE RECUPERAR USUARIOS.");
         ArrayList <Usuarios> arrayUsuarios = new ArrayList <Usuarios>();
         Usuarios usuario;
@@ -128,7 +127,11 @@ public class ConexionDB {
      * @param cadena La consulta en concreto
      * @return
      */
-    private int consultaActualiza(Statement st, String cadena) {
+    public int consultaActualiza(String cadena) {
+    	System.out.println("EJECUTANDO QUERY.");
+    	conectar();
+    	Statement st = conexion();
+    	
         int rs = -1;
         try {
             rs = st.executeUpdate(cadena);
