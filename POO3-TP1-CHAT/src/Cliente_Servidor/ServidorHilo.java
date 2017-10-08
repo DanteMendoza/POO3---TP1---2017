@@ -32,19 +32,19 @@ public class ServidorHilo extends Thread {
     private void conectar() {
     	try {
 			dos.writeUTF("#estableciendo conexion al server...\n");
-			sleep(2000);
-			dos.writeUTF("#conexion exitosa, su id es: " + "bdd:ID" + "\n");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
     }
     
     //Comando: UN -username
+    //Ahora este metodo es el responsable de asignar la ID al cliente
     private void nombreUser() {
     	try {
     		String aux = this.accion.substring(4, this.accion.length());
-			this.server.getConexionDB().consultaActualiza("INSERT INTO usuarios(id_usuario_PK, nombre_usuario) VALUES (1006, \'" + aux + "\');");
-			dos.writeUTF("#registro el username: " + aux + "\n");
+    		int idx = this.server.obtenerUsuarios().size() + 1000;
+			this.server.getConexionDB().consultaActualiza("INSERT INTO usuarios(id_usuario_PK, nombre_usuario) VALUES (" + idx + ", \'" + aux + "\');");
+			dos.writeUTF("#registro el username: " + aux + ", su ID es: " + idx + "\n");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
