@@ -1,9 +1,9 @@
-package v6;
-
+package Cliente_Servidor;
 
 import java.io.*;
 import java.net.*;
 import java.util.logging.*;
+import jdbc.ConexionDB;
 
 //Clase Servidor con el patron Singleton
 

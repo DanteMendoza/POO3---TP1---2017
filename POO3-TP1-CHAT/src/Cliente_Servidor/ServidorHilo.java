@@ -1,4 +1,4 @@
-package v6;
+package Cliente_Servidor;
 
 
 import java.io.*;
@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 //import java.util.ArrayList;
 import java.util.logging.*;
+
+import domain.Usuarios;
 
 public class ServidorHilo extends Thread {
 	

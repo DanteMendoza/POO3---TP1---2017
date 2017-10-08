@@ -1,7 +1,6 @@
-package v6;
+package Cliente_Servidor;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 
 //Una simple clase de prueba
 
