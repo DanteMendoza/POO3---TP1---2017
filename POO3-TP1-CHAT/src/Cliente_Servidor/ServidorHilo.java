@@ -4,11 +4,8 @@ package Cliente_Servidor;
 import java.io.*;
 import java.net.*;
 import java.sql.SQLException;
-import java.util.ArrayList;
-//import java.util.ArrayList;
 import java.util.logging.*;
 
-import domain.Usuarios;
 
 public class ServidorHilo extends Thread {
 	
@@ -16,6 +13,7 @@ public class ServidorHilo extends Thread {
     private DataOutputStream dos;
     private String accion;
     public BufferedReader console;
+    private Servidor server;
     
     public ServidorHilo(Socket socket, int id) {
         this.socket = socket;
@@ -23,6 +21,7 @@ public class ServidorHilo extends Thread {
         try {
             dos = new DataOutputStream(socket.getOutputStream());
             this.console = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            this.server = Servidor.crear();
         } catch (IOException ex) {
             Logger.getLogger(ServidorHilo.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -77,11 +76,11 @@ public class ServidorHilo extends Thread {
     }
     
     //Nuevo comando para devolver por la consola en telnet, la lista de usuarios de la bdd Comando: QC
-    private void consultarUsuarios(String cadena) throws SQLException, IOException {
-    	ArrayList <Usuarios> arrayUsuarios = Servidor.conexionDB.recuperarUsuarios(cadena);
-    	for(int i=0; i< arrayUsuarios.size(); i++) {
-    		dos.writeUTF(arrayUsuarios.get(i).getNombre_usuario() + " ");
-    		dos.writeUTF(arrayUsuarios.get(i).getId_usuario_PK() + "\n");
+    //ahora el metodo va a obtener el arraylist de usuarios del servidor
+    private void consultarUsuarios() throws SQLException, IOException {
+    	for(int i=0; i< this.server.obtenerUsuarios().size(); i++) {
+    		dos.writeUTF(this.server.obtenerUsuarios().get(i).getNombre_usuario() + " ");
+    		dos.writeUTF(this.server.obtenerUsuarios().get(i).getId_usuario_PK() + "\n");
     	}
     }
     
@@ -138,7 +137,7 @@ public class ServidorHilo extends Thread {
         		}else if(this.accion.equals("QC")) {
                 	
             		try {
-						this.consultarUsuarios("SELECT * FROM usuarios;");
+						this.consultarUsuarios();
 						
 					} catch (SQLException e) {
 						e.printStackTrace();

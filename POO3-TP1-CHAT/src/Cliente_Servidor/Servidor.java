@@ -2,7 +2,11 @@ package Cliente_Servidor;
 
 import java.io.*;
 import java.net.*;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.logging.*;
+
+import domain.Usuarios;
 import jdbc.ConexionDB;
 
 //Clase Servidor con el patron Singleton
@@ -13,13 +17,15 @@ public class Servidor {
 	private ServerSocket ss;
 	private int idSession;
 	private static Servidor x = null;
-	public static ConexionDB conexionDB = ConexionDB.getConexionDB(); //accede de forma estatica a la conexion de la bdd
+	private ConexionDB conexionDB;
+	private ArrayList<Usuarios> listaUsers; //estructura de datos local para guardar la lista obtenida de la BDD
 	
 	//Constructor privado
 	private Servidor(int puerto) {
 		this.idSession = 0;
 		this.puerto = puerto;
-		//this.conexionDB = ConexionDB.getConexionDB();
+		this.listaUsers = new ArrayList<Usuarios>();
+		this.conexionDB = ConexionDB.getConexionDB();
 	}
 
 	//Creo la única instancia
@@ -36,8 +42,19 @@ public class Servidor {
 		return this.puerto;
 	}
 	
-	public static ConexionDB getConexionDB() {
-		return conexionDB;
+	public ConexionDB getConexionDB() {
+		return this.conexionDB;
+	}
+	
+	//Este metodo sirve para obtener la lista de usuarios que va a guardar el servidor, tambien deberá servir para actualizar
+	//la lista a medida que se agregen nuevos usuarios
+	public ArrayList<Usuarios> obtenerUsuarios() {
+		try {
+			this.listaUsers = this.conexionDB.recuperarUsuarios("SELECT * FROM usuarios;");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return this.listaUsers;
 	}
 	
 	public void iniciar() {
@@ -57,6 +74,7 @@ public class Servidor {
 	        } catch (IOException ex) {
 	            Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
 	        }
+	        x.obtenerUsuarios(); //Cada vez que inicia el server se conecta automaticamente a la BDD y obtiene la lista de usuarios
 	}
     
 }

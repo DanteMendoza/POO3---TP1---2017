@@ -10,6 +10,5 @@ public class Test {
 		//Servidor s1 = Servidor.crear(); probando que el singleton funcione
 		Servidor s2 = Servidor.crear();
 		s2.iniciar();
-		
 	}
 }
