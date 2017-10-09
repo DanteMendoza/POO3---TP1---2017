@@ -2,6 +2,8 @@ package jdbc;
 
 import java.sql.*;
 import java.util.ArrayList;
+
+import domain.Conversaciones;
 import domain.Usuarios;
 
 public class ConexionDB {
@@ -55,13 +57,12 @@ public class ConexionDB {
  
         // Se sacan los datos de la tabla usuarios
         ResultSet rs = consultaQuery (st, cadena);
-        if (rs != null) {
-            System.out.println("El listado de usuarios es el siguiente:");
- 
+        if (rs != null) { 
             while (rs.next()) {
             	usuario = new Usuarios();
             	usuario.setId_usuario_PK( (int) rs.getObject("id_usuario_PK"));
             	usuario.setNombre_usuario( (String)  rs.getObject("nombre_usuario"));
+            	usuario.setPassword_usuario( (String)  rs.getObject("password_usuario"));
             	arrayUsuarios.add(usuario);
             }
             cerrar(rs);
@@ -70,6 +71,31 @@ public class ConexionDB {
         System.out.println("FIN DE RECUPERAR USUARIOS.");
         
         return arrayUsuarios;
+    }
+    
+    public ArrayList<Conversaciones> recuperarConversaciones(String cadena) throws SQLException {
+        System.out.println("INICIO DE RECUPERAR CONVERSACIONES.");
+        ArrayList <Conversaciones> arrayConversaciones = new ArrayList <Conversaciones>();
+        Conversaciones conversacion;
+        conectar();
+        Statement st = conexion();
+ 
+        // Se sacan los datos de la tabla usuarios
+        ResultSet rs = consultaQuery (st, cadena);
+        if (rs != null) { 
+            while (rs.next()) {
+            	conversacion = new Conversaciones();
+            	conversacion.setId_conversacion_PK( (int) rs.getObject("id_conversacion_PK"));
+            	conversacion.setId_usuario1_FK( (int)  rs.getObject("id_usuario1_FK"));
+            	conversacion.setId_usuario2_FK( (int)  rs.getObject("id_usuario2_FK"));
+            	arrayConversaciones.add(conversacion);
+            }
+            cerrar(rs);
+        }
+        cerrar(st);
+        System.out.println("FIN DE RECUPERAR CONVERSACIONES.");
+        
+        return arrayConversaciones;
     }
  
     /**
@@ -128,7 +154,6 @@ public class ConexionDB {
      * @return
      */
     public int consultaActualiza(String cadena) {
-    	System.out.println("EJECUTANDO QUERY.");
     	conectar();
     	Statement st = conexion();
     	

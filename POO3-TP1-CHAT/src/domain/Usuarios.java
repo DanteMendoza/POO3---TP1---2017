@@ -4,6 +4,7 @@ public class Usuarios {
 	
 	private int id_usuario_PK;
 	private String nombre_usuario;
+	private String password_usuario;
 	
 	public Usuarios(){
 		
@@ -29,11 +30,19 @@ public class Usuarios {
 	public void setNombre_usuario(String nombre_usuario) {
 		this.nombre_usuario = nombre_usuario;
 	}
+	
+	public String getPassword_usuario() {
+		return password_usuario;
+	}
+
+	public void setPassword_usuario(String password_usuario) {
+		this.password_usuario = password_usuario;
+	}
 
 	@Override
 	public String toString() {
-		return "Usuarios [id_usuario_PK=" + this.getId_usuario_PK() + ", nombre_usuario="
-				+ this.getNombre_usuario() + "]";
+		return "\n id_usuario_PK: " + this.getId_usuario_PK() + "\n nombre_usuario: "
+				+ this.getNombre_usuario() + "\n password_usuario: " + this.getPassword_usuario();
 	}
 		
 }
