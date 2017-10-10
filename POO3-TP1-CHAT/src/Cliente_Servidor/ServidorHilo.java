@@ -4,7 +4,10 @@ package Cliente_Servidor;
 import java.io.*;
 import java.net.*;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.logging.*;
+
+import domain.Conversaciones;
 
 
 public class ServidorHilo extends Thread {
@@ -15,6 +18,7 @@ public class ServidorHilo extends Thread {
     public BufferedReader console;
     private Servidor server;
     private int threadID;
+    private ArrayList<Conversaciones> convsDelCliente;
     
     public ServidorHilo(Socket socket, int id) {
         this.socket = socket;
@@ -23,6 +27,7 @@ public class ServidorHilo extends Thread {
             dos = new DataOutputStream(socket.getOutputStream());
             this.console = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.server = Servidor.crear();
+            this.convsDelCliente = new ArrayList<Conversaciones>();
         } catch (IOException ex) {
             Logger.getLogger(ServidorHilo.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -54,13 +59,16 @@ public class ServidorHilo extends Thread {
     }
     
     //Comando: CN -Id
+    //Ahora el comando tiene la responsabilidad de crear un objeto conversacion y guardarlo en la lista local(arraylist<conversaciones>)
+    //asi, cada hilo tiene el control de las conversaciones que ha iniciado
     private void conectarCli() {
     	int idx = 0;
     	try {
     		idx = this.server.obtenerConversaciones().size() + 2000;
     		String idDest = this.accion.substring(4, this.accion.length());
     		this.server.getConexionDB().consultaActualiza("INSERT INTO conversaciones(id_conversacion_pk, id_usuario1_fk, id_usuario2_fk) VALUES (" + idx + ", " + this.threadID + ",  " + idDest + ");");
-			dos.writeUTF("#te conecto a un cliente con la ID: " + idDest + "\n");
+    		this.convsDelCliente.add(new Conversaciones(idx, this.threadID, Integer.parseInt(idDest)));
+			dos.writeUTF("#Has creado una nueva conversacion con el cliente ID: " + idDest + "\n");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -76,9 +84,23 @@ public class ServidorHilo extends Thread {
     }
     
     //Comando: DS -Id
+    //Se guardan las conversaciones de dos formas distintas:
+    //1-registro en la bdd
+    //2-un objeto de tipo conversaciones, en un array list de conversaciones, me parecio importante hacer esto para que cada
+    //hilo (cliente) tenga a su alcance una lista de las conversaciones que ha iniciado, asi se reduce la E/S a la bdd y se usa mas la clase conversaciones
+    //entonces, cuando quiero finalizar una conversasion paso el id de ese usuario al que quiero desconectarme, asi, borro el registro de la bdd
+    //donde el id_usuario2_fk (el user destino al que me conecte) coincida, y tambien restrinjo a que solo borre las conversaciones que haya iniciado YO
+    //con ese user, asi evito borrar tambien aquellas conversaciones de otros usuarios que tenian tambien con el usuario al que me quiero desconectar.
+    //Acto seguido recorro la lista de conversaciones local, hago la comprobacion y elimino los objetos conversaciones que coincidan
     private void desconectarCli() {
     	try {
-			dos.writeUTF("#te desconecto de la conversacion con el user ID: " + this.accion.substring(4, this.accion.length()) + "\n");
+    		int aux = Integer.parseInt(this.accion.substring(4, this.accion.length()));
+    		this.server.getConexionDB().consultaActualiza("DELETE FROM conversaciones WHERE Id_usuario2_fk = " + aux + "AND Id_usuario1_fk = " + this.threadID + ";");
+    		for(int i=0; i<this.convsDelCliente.size(); i++) {
+    			if(this.convsDelCliente.get(i).getId_usuario2_FK() == aux)
+    				this.convsDelCliente.remove(i);
+    		}
+			dos.writeUTF("#te desconecto de la conversacion con el user ID: " + aux + "\n");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -154,8 +176,8 @@ public class ServidorHilo extends Thread {
         		}else if(this.accion.equals("QC")) {
                 	
             		try {
-						this.consultarUsuarios();
-						//this.consultarConversaciones();
+						//this.consultarUsuarios();
+						this.consultarConversaciones();
 						
 					} catch (SQLException e) {
 						e.printStackTrace();
