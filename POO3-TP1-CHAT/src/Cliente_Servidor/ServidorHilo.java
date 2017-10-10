@@ -40,17 +40,17 @@ public class ServidorHilo extends Thread {
     
     //Comando: UN -username
     //Ahora este metodo es el responsable de asignar la ID al cliente
-    private int nombreUser() {
+    private void nombreUser() {
     	int idx = 0;
     	try {
     		String aux = this.accion.substring(4, this.accion.length());
     		idx = this.server.obtenerUsuarios().size() + 1000;
-			this.server.getConexionDB().consultaActualiza("INSERT INTO usuarios(id_usuario_PK, nombre_usuario) VALUES (" + idx + ", \'" + aux + "\');");
+			this.server.getConexionDB().consultaActualiza("INSERT INTO usuarios(id_usuario_PK, nombre_usuario, passwork_usuario) VALUES (" + idx + ", \'" + aux + ", \' " + 1234 + ");");
+			this.threadID = idx;
 			dos.writeUTF("#registro el username: " + aux + ", su ID es: " + idx + "\n");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-    	return idx;
     }
     
     //Comando: CN -Id
@@ -132,7 +132,7 @@ public class ServidorHilo extends Thread {
                   
         		}else if(this.accion.substring(0,2).equals("UN")) {
             	
-        			this.threadID = this.nombreUser();
+        			this.nombreUser();
         			dos.writeUTF("Thread ID: \n" + this.threadID);
             	
         		}else if(this.accion.substring(0,2).equals("CN")){
