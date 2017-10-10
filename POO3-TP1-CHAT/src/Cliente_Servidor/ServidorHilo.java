@@ -55,8 +55,12 @@ public class ServidorHilo extends Thread {
     
     //Comando: CN -Id
     private void conectarCli() {
+    	int idx = 0;
     	try {
-			dos.writeUTF("#te conecto a un cliente con la ID: " + this.accion.substring(4, this.accion.length()) + "\n");
+    		idx = this.server.obtenerConversaciones().size() + 2000;
+    		String idDest = this.accion.substring(4, this.accion.length());
+    		this.server.getConexionDB().consultaActualiza("INSERT INTO conversaciones(id_conversacion_pk, id_usuario1_fk, id_usuario2_fk) VALUES (" + idx + ", " + this.threadID + ",  " + idDest + ");");
+			dos.writeUTF("#te conecto a un cliente con la ID: " + idDest + "\n");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -151,8 +155,8 @@ public class ServidorHilo extends Thread {
         		}else if(this.accion.equals("QC")) {
                 	
             		try {
-						//this.consultarUsuarios();
-						this.consultarConversaciones();
+						this.consultarUsuarios();
+						//this.consultarConversaciones();
 						
 					} catch (SQLException e) {
 						e.printStackTrace();
