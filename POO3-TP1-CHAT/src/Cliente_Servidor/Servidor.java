@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.logging.*;
 
+import domain.Conversaciones;
 import domain.Usuarios;
 import jdbc.ConexionDB;
 
@@ -19,6 +20,7 @@ public class Servidor {
 	private static Servidor x = null;
 	private ConexionDB conexionDB;
 	private ArrayList<Usuarios> listaUsers; //estructura de datos local para guardar la lista obtenida de la BDD
+	private ArrayList<Conversaciones> listaConversaciones;
 	
 	//Constructor privado
 	private Servidor(int puerto) {
@@ -55,6 +57,15 @@ public class Servidor {
 			e.printStackTrace();
 		}
 		return this.listaUsers;
+	}
+	
+	public ArrayList<Conversaciones> obtenerConversaciones(){
+		try {
+			this.listaConversaciones = this.conexionDB.recuperarConversaciones("SELECT * FROM conversaciones;");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return this.listaConversaciones;
 	}
 	
 	public void iniciar() {

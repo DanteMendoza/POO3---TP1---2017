@@ -80,12 +80,20 @@ public class ServidorHilo extends Thread {
 		}
     }
     
-    //Nuevo comando para devolver por la consola en telnet, la lista de usuarios de la bdd Comando: QC
-    //ahora el metodo va a obtener el arraylist de usuarios del servidor
+    //Metodo creado para debug, responde al comando QC
     private void consultarUsuarios() throws SQLException, IOException {
     	for(int i=0; i< this.server.obtenerUsuarios().size(); i++) {
     		dos.writeUTF(this.server.obtenerUsuarios().get(i).getNombre_usuario() + " ");
     		dos.writeUTF(this.server.obtenerUsuarios().get(i).getId_usuario_PK() + "\n");
+    	}
+    }
+    
+    //Otro metodo creado para debug, tambien responde al comando QC
+    private void consultarConversaciones() throws SQLException, IOException {
+    	for(int i=0; i<this.server.obtenerConversaciones().size(); i++) {
+    		dos.writeUTF(this.server.obtenerConversaciones().get(i).getId_conversacion_PK() + " ");
+    		dos.writeUTF(this.server.obtenerConversaciones().get(i).getId_usuario1_FK() + " ");
+    		dos.writeUTF(this.server.obtenerConversaciones().get(i).getId_usuario2_FK() + "\n");
     	}
     }
     
@@ -143,7 +151,8 @@ public class ServidorHilo extends Thread {
         		}else if(this.accion.equals("QC")) {
                 	
             		try {
-						this.consultarUsuarios();
+						//this.consultarUsuarios();
+						this.consultarConversaciones();
 						
 					} catch (SQLException e) {
 						e.printStackTrace();
