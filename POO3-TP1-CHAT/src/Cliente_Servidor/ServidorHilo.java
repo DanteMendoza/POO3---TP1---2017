@@ -45,7 +45,7 @@ public class ServidorHilo extends Thread {
     	try {
     		String aux = this.accion.substring(4, this.accion.length());
     		idx = this.server.obtenerUsuarios().size() + 1000;
-			this.server.getConexionDB().consultaActualiza("INSERT INTO usuarios(id_usuario_PK, nombre_usuario, passwork_usuario) VALUES (" + idx + ", \'" + aux + ", \' " + 1234 + ");");
+			this.server.getConexionDB().consultaActualiza("INSERT INTO usuarios(id_usuario_PK, nombre_usuario, password_usuario) VALUES (" + idx + ", \'" + aux + "\', 1234);");
 			this.threadID = idx;
 			dos.writeUTF("#registro el username: " + aux + ", su ID es: " + idx + "\n");
 		} catch (IOException e) {
@@ -133,7 +133,6 @@ public class ServidorHilo extends Thread {
         		}else if(this.accion.substring(0,2).equals("UN")) {
             	
         			this.nombreUser();
-        			dos.writeUTF("Thread ID: \n" + this.threadID);
             	
         		}else if(this.accion.substring(0,2).equals("CN")){
             	
