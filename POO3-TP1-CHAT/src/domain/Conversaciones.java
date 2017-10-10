@@ -10,6 +10,12 @@ public class Conversaciones {
 		
 	}
 	
+	public Conversaciones(int id_conversacion_PK, int id_usuario1_FK, int id_usuario2_FK){
+		this.setId_conversacion_PK(id_conversacion_PK);
+		this.setId_usuario1_FK(id_usuario1_FK);
+		this.setId_usuario2_FK(id_usuario2_FK);
+	}
+	
 	public int getId_conversacion_PK() {
 		return id_conversacion_PK;
 	}

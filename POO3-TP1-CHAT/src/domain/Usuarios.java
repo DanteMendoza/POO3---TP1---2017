@@ -10,9 +10,10 @@ public class Usuarios {
 		
 	}
 	
-	public Usuarios(int id_usuario_PK, String nombre_usuario){
+	public Usuarios(int id_usuario_PK, String nombre_usuario, String password_usuario){
 		this.setId_usuario_PK(id_usuario_PK);
 		this.setNombre_usuario(nombre_usuario);
+		this.setPassword_usuario(password_usuario);
 	}
 	
 	public int getId_usuario_PK() {
