@@ -4,6 +4,7 @@
 -- Table usuarios
 -- -----------------------------------------------------
 --DROP TABLE IF EXISTS usuarios;
+--DROP TABLE IF EXISTS conversaciones;
 
 CREATE TABLE IF NOT EXISTS usuarios (
   id_usuario_PK int NOT NULL,
