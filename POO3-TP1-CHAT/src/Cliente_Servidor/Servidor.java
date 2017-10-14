@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.logging.*;
 
 import domain.Conversaciones;
+import domain.Mensajes;
 import domain.Usuarios;
 import jdbc.ConexionDB;
 
@@ -20,7 +21,8 @@ public class Servidor {
 	private static Servidor x = null;
 	private ConexionDB conexionDB;
 	private ArrayList<Usuarios> listaUsers; //estructura de datos local para guardar la lista obtenida de la BDD
-	private ArrayList<Conversaciones> listaConversaciones;
+	private ArrayList<Conversaciones> listaConversaciones; //Guarda todas las conversaciones activas de todos los usuarios activos
+	private ArrayList<Mensajes> mensajesPendientes; //Lista de mensajes pendientes de entrega
 	
 	//Constructor privado
 	private Servidor(int puerto) {
@@ -28,6 +30,8 @@ public class Servidor {
 		this.puerto = puerto;
 		this.listaUsers = new ArrayList<Usuarios>();
 		this.conexionDB = ConexionDB.getConexionDB();
+		this.mensajesPendientes = new ArrayList<Mensajes>();
+		this.listaConversaciones = new ArrayList<Conversaciones>();
 	}
 
 	//Creo la única instancia
@@ -44,15 +48,19 @@ public class Servidor {
 		return this.puerto;
 	}
 	
-	public ConexionDB getConexionDB() {
+	public synchronized ConexionDB getConexionDB() {
 		return this.conexionDB;
+	}
+	
+	public ArrayList<Mensajes> getMensajesPendientes(){
+		return this.mensajesPendientes;
 	}
 	
 	//Este metodo sirve para obtener la lista de usuarios que va a guardar el servidor, tambien deberá servir para actualizar
 	//la lista a medida que se agregen nuevos usuarios
 	public ArrayList<Usuarios> obtenerUsuarios() {
 		try {
-			this.listaUsers = this.conexionDB.recuperarUsuarios("SELECT * FROM usuarios;");
+			this.listaUsers = this.getConexionDB().recuperarUsuarios("SELECT * FROM usuarios;");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -61,7 +69,7 @@ public class Servidor {
 	
 	public ArrayList<Conversaciones> obtenerConversaciones(){
 		try {
-			this.listaConversaciones = this.conexionDB.recuperarConversaciones("SELECT * FROM conversaciones;");
+			this.listaConversaciones = this.getConexionDB().recuperarConversaciones("SELECT * FROM conversaciones;");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

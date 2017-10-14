@@ -43,11 +43,11 @@ CREATE TABLE IF NOT EXISTS conversaciones (
   id_usuario2_FK int,
   PRIMARY KEY (id_conversacion_PK),
   CONSTRAINT fk_CONVERSACIONES_USUARIOS1
-    FOREIGN KEY (id_usuario1_FK )
-    REFERENCES usuarios (id_usuario_PK ),
-  CONSTRAINT fk_CONVERSACIONES_USUARIOS2
-    FOREIGN KEY (id_usuario2_FK )
-    REFERENCES usuarios (id_usuario_PK )
+    FOREIGN KEY (id_usuario1_FK , id_usuario2_FK)
+    REFERENCES usuarios (id_usuario_PK , id_usuario2_PK),
+-- CONSTRAINT fk_CONVERSACIONES_USUARIOS2
+--    FOREIGN KEY (id_usuario2_FK )
+--    REFERENCES usuarios (id_usuario_PK )
 );
 
 

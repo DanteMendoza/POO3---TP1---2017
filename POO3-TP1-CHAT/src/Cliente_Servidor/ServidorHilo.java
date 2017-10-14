@@ -8,25 +8,35 @@ import java.util.ArrayList;
 import java.util.logging.*;
 
 import domain.Conversaciones;
+import domain.Mensajes;
 import domain.Usuarios;
 
 
 public class ServidorHilo extends Thread {
+	
+	//Atributos de conexion con el server y la entrada de datos
 	
     private Socket socket;
     private DataOutputStream escrituraConsCliente;
     public BufferedReader lecturaConsCliente;
     private Servidor server; //teniendo referencia al servidor, tendran acceso a la base de datos
     private int threadID; //equivale al id del usuario
+    
+    //Atributos que el hilo adopta del cliente:
+    
     private Usuarios usuarioThread; //Objeto USUARIO que maneja el hilo
     private ArrayList<Conversaciones> convsDelUsuario; //Conversaciones del usuario
+    private ArrayList<Mensajes> mensajesRecibidos; //mensajes que recibe de otros usuarios
+    
     
     public ServidorHilo(Socket socket, int id) {
         this.socket = socket;
         try {
+        	this.threadID = 0;
             escrituraConsCliente = new DataOutputStream(socket.getOutputStream());
             this.lecturaConsCliente = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.server = Servidor.crear();
+            this.mensajesRecibidos = new ArrayList<Mensajes>();
             this.convsDelUsuario = new ArrayList<Conversaciones>();
             this.usuarioThread = new Usuarios(); //creo el objeto usuario vacio
             this.usuarioThread.setId_usuario_PK(0); //le asigno id= 0, la idea es que hasta que no se registre o loguee, esto actue como una restriccion.
@@ -39,23 +49,30 @@ public class ServidorHilo extends Thread {
     
     
     //Comando: UN -username
-    //comando de registro
-    private void nombreUser(String unBuffer) {
-    	int idx = 0;
+    //RESPONSABLE DE:
+    //Crear e instanciar el objeto usuario asociado al thread
+    //Insertar el registro con el nuevo usuario en la BDD
+    private int nombreUser(String unBuffer) {
     	try {
     		String aux = unBuffer.substring(4, unBuffer.length());
-    		idx = this.server.obtenerUsuarios().size() + 1000;
-			this.server.getConexionDB().consultaActualiza("INSERT INTO usuarios(id_usuario_PK, nombre_usuario, password_usuario) VALUES (" + idx + ", \'" + aux + "\', 1234);");
-			this.threadID = idx;
-			escrituraConsCliente.writeUTF("#registro el username: " + aux + ", su ID es: " + idx + "\n");
+    		this.threadID = this.server.obtenerUsuarios().size() + 1000;
+    		if(this.threadID == 0) {
+    			System.out.println("Ha ocurrido un error en el registro\n");
+    			return -1;
+    		}
+    		this.usuarioThread = new Usuarios(this.threadID, aux, "1234"); 
+			this.server.getConexionDB().consultaActualiza("INSERT INTO usuarios(id_usuario_PK, nombre_usuario, password_usuario) VALUES (" + this.threadID + ", \'" + aux + "\', 1234);");
+			escrituraConsCliente.writeUTF("#registro el username: " + aux + ", su ID es: " + this.threadID + "\n");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+    	return 0;
     }
     
     //Comando: CN -Id
-    //Ahora el comando tiene la responsabilidad de crear un objeto conversacion y guardarlo en la lista local(arraylist<conversaciones>)
-    //asi, cada hilo tiene el control de las conversaciones que ha iniciado
+    //RESPONSABLE DE:
+    //Crear e instanciar un nuevo objeto conversaciones, y guardarlo en la lista de conversaciones del hilo
+    //Añadir el nuevo registro de conversacion a la BDD
     private int conectarCli(String unBuffer) {
     	int idx = 0;
     	try {
@@ -75,9 +92,31 @@ public class ServidorHilo extends Thread {
     }
     
     //Comando: TX -mensaje
-    private void mensaje(String unBuffer) {
+    private void enviarMensaje(String unBuffer) {
     	try {
+    		String mensaje = unBuffer.substring(4, unBuffer.length());
+    		this.server.getMensajesPendientes().add(new Mensajes(this.convsDelUsuario.get(this.convsDelUsuario.size()-1), mensaje)); //El mensaje corresponde a la ultima conversacion abierta
 			escrituraConsCliente.writeUTF("#solicitud para enviar el mensaje: " + unBuffer.substring(4, unBuffer.length()) + "\n");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+    }
+    
+    //Comando: GM (obtener mensajes)
+    //Por ahora, este comando lo debe ejecutar el usuario para ver si recibio mensajes...
+    private void recibirMensaje() {
+    	//System.out.println("mensajes pendientes: " + this.server.getMensajesPendientes().size());
+    	for(int i=0; i<this.server.getMensajesPendientes().size(); i++) {
+    		//System.out.println("dest msj: " + this.server.getMensajesPendientes().get(i).getId_usuario2_FK());
+    		//System.out.println("mi threadID: " + this.threadID);
+    		if(this.server.getMensajesPendientes().get(i).getId_usuario2_FK() == this.threadID) {
+    			this.mensajesRecibidos.add(this.server.getMensajesPendientes().get(i));
+    			this.server.getMensajesPendientes().remove(i);
+    		}
+    	}
+    	//System.out.println("mensajes recibidos: " + this.mensajesRecibidos.size());
+    	try {
+			escrituraConsCliente.writeUTF("Mensaje recibido de " + this.mensajesRecibidos.get(0).getId_usuario1_FK() + ": " + this.mensajesRecibidos.get(0).getTexto() + "\n");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -94,18 +133,18 @@ public class ServidorHilo extends Thread {
     //Acto seguido recorro la lista de conversaciones local, hago la comprobacion y elimino los objetos conversaciones que coincidan
     private int desconectarCli(String unBuffer) {
     	try {
-    		if(this.usuarioThread.getId_usuario_PK() == 0) {
+    		if(this.usuarioThread.getId_usuario_PK() == 0) { //el id 0 significa que el user no esta logueado o no existe
     			escrituraConsCliente.writeUTF("[DS] No estas logueado, inicia sesion o registrate\n");
     			return -1;
     		}
-    		if(this.convsDelUsuario.isEmpty()) {
+    		if(this.convsDelUsuario.isEmpty()) { //no se puede desconectarse de una conversacion si nunca se la ha creado
     			escrituraConsCliente.writeUTF("[DS] No tienes ninguna conversacion todavia\n");
     			return -1;
     		}
     		int aux = Integer.parseInt(unBuffer.substring(4, unBuffer.length())); //parametro del comando
     		boolean com = true;
     		for(int i=0; i< this.convsDelUsuario.size(); i++) {
-    			if(this.convsDelUsuario.get(i).getId_usuario2_FK() == aux) {
+    			if(this.convsDelUsuario.get(i).getId_usuario2_FK() == aux) { 
     				this.convsDelUsuario.remove(i);
     				com = false;
     			}
@@ -145,6 +184,10 @@ public class ServidorHilo extends Thread {
     private int loguear(String unBuffer) {
     	try {
     		String[] parts = unBuffer.split("-"); //divido la linea que recibo en partes
+    		if(parts.length != 3) { //si las partes del buffer no son 3, significa que no se introdujo el usuario, la contrasenia o ambos
+    			escrituraConsCliente.writeUTF("has dejado en blanco el campo usuario o contrasenia\n");
+    			return -1;
+    		}
     		String username = parts[1].replace(" ", ""); //asigno como username la segunda parte quitandole los espacios para evitar errores
     		String passwd = parts[2].replace(" ", ""); //asigno como password la tercera parte quitandole los espacios para evitar errores
     		//System.out.println("username: " + username.length() + ", pass: " + passwd.length());
@@ -156,6 +199,7 @@ public class ServidorHilo extends Thread {
 				return -1;
 			}else if(usuarioLog.size() == 1){
 				this.usuarioThread = usuarioLog.get(0);
+				this.threadID = this.usuarioThread.getId_usuario_PK();
 				escrituraConsCliente.writeUTF("Bienvenido " + this.usuarioThread.getNombre_usuario() + "!!.\n");
 			}else {
 				escrituraConsCliente.writeUTF("error de ambiguedad en los datos\n");
@@ -215,9 +259,13 @@ public class ServidorHilo extends Thread {
                 	
             		}else if(comando.equals("TX")) {
                 	
-            			this.mensaje(lineaLeida);
+            			this.enviarMensaje(lineaLeida);
                 	
-            		}else if(comando.equals("DS")){
+            		}else if(comando.equals("GM")) {
+                    	
+                			this.recibirMensaje();
+                    	
+                	}else if(comando.equals("DS")){
                 	
             			this.desconectarCli(lineaLeida);
                 	
@@ -230,7 +278,7 @@ public class ServidorHilo extends Thread {
                     	
                 		try {
     						this.consultarUsuarios();
-    						this.consultarConversaciones();
+    						//this.consultarConversaciones();
     						
     					} catch (SQLException e) {
     						e.printStackTrace();
