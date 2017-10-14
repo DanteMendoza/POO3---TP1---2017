@@ -18,7 +18,8 @@ public class ServidorHilo extends Thread {
 	
     private Socket socket;
     private DataOutputStream escrituraConsCliente;
-    public BufferedReader lecturaConsCliente;
+    //public BufferedReader escrituraConsCliente;
+    private BufferedReader lecturaConsCliente;
     private Servidor server; //teniendo referencia al servidor, tendran acceso a la base de datos
     private int threadID; //equivale al id del usuario
     
@@ -33,7 +34,7 @@ public class ServidorHilo extends Thread {
         this.socket = socket;
         try {
         	this.threadID = 0;
-            escrituraConsCliente = new DataOutputStream(socket.getOutputStream());
+            this.escrituraConsCliente = new DataOutputStream(socket.getOutputStream());
             this.lecturaConsCliente = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.server = Servidor.crear();
             this.mensajesRecibidos = new ArrayList<Mensajes>();
@@ -62,6 +63,7 @@ public class ServidorHilo extends Thread {
     		}
     		this.usuarioThread = new Usuarios(this.threadID, aux, "1234"); 
 			this.server.getConexionDB().consultaActualiza("INSERT INTO usuarios(id_usuario_PK, nombre_usuario, password_usuario) VALUES (" + this.threadID + ", \'" + aux + "\', 1234);");
+			System.out.println("[UN] peticion de registro de un nuevo usuario: " + aux  + " | ID: " + this.threadID + "\n");
 			escrituraConsCliente.writeUTF("#registro el username: " + aux + ", su ID es: " + this.threadID + "\n");
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -73,7 +75,7 @@ public class ServidorHilo extends Thread {
     //RESPONSABLE DE:
     //Crear e instanciar un nuevo objeto conversaciones, y guardarlo en la lista de conversaciones del hilo
     //Añadir el nuevo registro de conversacion a la BDD
-    private int conectarCli(String unBuffer) {
+    private synchronized int conectarCli(String unBuffer) {
     	int idx = 0;
     	try {
     		if(this.usuarioThread.getId_usuario_PK() == 0) {
@@ -84,6 +86,7 @@ public class ServidorHilo extends Thread {
     		String idDest = unBuffer.substring(4, unBuffer.length());
     		this.server.getConexionDB().consultaActualiza("INSERT INTO conversaciones(id_conversacion_pk, id_usuario1_fk, id_usuario2_fk) VALUES (" + idx + ", " + this.threadID + ",  " + idDest + ");");
     		this.convsDelUsuario.add(new Conversaciones(idx, this.threadID, Integer.parseInt(idDest)));
+    		System.out.println("[CN] Peticion de nueva conversacion: " + this.threadID + " --> " + idDest + "\n");
 			escrituraConsCliente.writeUTF("#Has creado una nueva conversacion con el cliente ID: " + idDest + "\n");
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -92,34 +95,46 @@ public class ServidorHilo extends Thread {
     }
     
     //Comando: TX -mensaje
-    private void enviarMensaje(String unBuffer) {
+    private int enviarMensaje(String unBuffer) {
     	try {
+    		if(unBuffer.length() <= 3) {
+    			escrituraConsCliente.writeUTF("no puedes enviar espacios en blanco\n");
+    			return -1;
+    		}
+    		if(this.convsDelUsuario.size() == 0) {
+    			escrituraConsCliente.writeUTF("Error: no puedes enviar un mensaje sin antes crear una conversacion con otro usuario..intentalo con el comando CN -idusuuario\n");
+    			return -1;
+    		}
     		String mensaje = unBuffer.substring(4, unBuffer.length());
-    		this.server.getMensajesPendientes().add(new Mensajes(this.convsDelUsuario.get(this.convsDelUsuario.size()-1), mensaje)); //El mensaje corresponde a la ultima conversacion abierta
-			escrituraConsCliente.writeUTF("#solicitud para enviar el mensaje: " + unBuffer.substring(4, unBuffer.length()) + "\n");
+    		this.server.agregarMensajes(new Mensajes(this.convsDelUsuario.get(this.convsDelUsuario.size()-1), mensaje)); //El mensaje corresponde a la ultima conversacion abierta
+			//System.out.println("Mensajes pendientes del server: " + this.server.obtenerMensajesPendientes().size());
+    		System.out.println("[TX] Peticion de envio de msj de " + this.threadID + "\n");
+    		escrituraConsCliente.writeUTF("#solicitud para enviar el mensaje: " + unBuffer.substring(4, unBuffer.length()) + "\n");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+    	return 0;
     }
     
     //Comando: GM (obtener mensajes)
     //Por ahora, este comando lo debe ejecutar el usuario para ver si recibio mensajes...
-    private void recibirMensaje() {
-    	//System.out.println("mensajes pendientes: " + this.server.getMensajesPendientes().size());
-    	for(int i=0; i<this.server.getMensajesPendientes().size(); i++) {
-    		//System.out.println("dest msj: " + this.server.getMensajesPendientes().get(i).getId_usuario2_FK());
-    		//System.out.println("mi threadID: " + this.threadID);
-    		if(this.server.getMensajesPendientes().get(i).getId_usuario2_FK() == this.threadID) {
-    			this.mensajesRecibidos.add(this.server.getMensajesPendientes().get(i));
-    			this.server.getMensajesPendientes().remove(i);
-    		}
-    	}
-    	//System.out.println("mensajes recibidos: " + this.mensajesRecibidos.size());
+    private int recibirMensaje() {
+    	this.mensajesRecibidos = this.server.retirarMensajesPorID(this.threadID);
+    	//System.out.println("mensajes RECIBIDOS: " + this.mensajesRecibidos.size());
     	try {
-			escrituraConsCliente.writeUTF("Mensaje recibido de " + this.mensajesRecibidos.get(0).getId_usuario1_FK() + ": " + this.mensajesRecibidos.get(0).getTexto() + "\n");
+    		if(this.mensajesRecibidos.size() == 0) {
+    			escrituraConsCliente.writeUTF("Por el momento no tienes mensajes\n");
+        		return -1;
+        	}
+    		String nombre = this.server.obtenerNombreUsuario(this.mensajesRecibidos.get(0).getId_usuario1_FK());
+    		System.out.println("[GM] Peticion de " + this.threadID + " para recuperar mensajes\n");
+			escrituraConsCliente.writeUTF("Mensaje recibido de " +
+					nombre + "(" + this.mensajesRecibidos.get(0).getId_usuario1_FK() + "): " + this.mensajesRecibidos.get(0).getTexto() + "\n");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+    	return 0;
+    	//System.out.println("mensajes recibidos: " + this.mensajesRecibidos.size());
     }
     
     //Comando: DS -Id
@@ -141,19 +156,21 @@ public class ServidorHilo extends Thread {
     			escrituraConsCliente.writeUTF("[DS] No tienes ninguna conversacion todavia\n");
     			return -1;
     		}
-    		int aux = Integer.parseInt(unBuffer.substring(4, unBuffer.length())); //parametro del comando
-    		boolean com = true;
-    		for(int i=0; i< this.convsDelUsuario.size(); i++) {
-    			if(this.convsDelUsuario.get(i).getId_usuario2_FK() == aux) { 
-    				this.convsDelUsuario.remove(i);
-    				com = false;
+    		int aux = Integer.parseInt(unBuffer.substring(4, unBuffer.length())); //parametro del comando (es el id al cual me quiero desconectar)
+    		boolean com = true; //para verificar si no se quiso borrar una conversacion con un id en el cual nunca se tuvo una conversacion
+    		for(int i=0; i< this.convsDelUsuario.size(); i++) { //recorro las conversaciones del usuario
+    			if(this.convsDelUsuario.get(i).getId_usuario2_FK() == aux) {  //si hay alguna conversacion cuyo id del destinatario coincida con el id que pasé
+    				this.convsDelUsuario.remove(i); //la elimino
+    				com = false; //seteo com en false indicando que hubo una conversacion con tal id y que fue eliminada
     			}
     		}
     		if(com) {
     			escrituraConsCliente.writeUTF("[DS] No tienes ninguna conversacion con el ID que indicaste\n");
     			return -1;
     		}
+    		//Elimino el registro conversacion de la BDD:
     		this.server.getConexionDB().consultaActualiza("DELETE FROM conversaciones WHERE Id_usuario2_fk = " + aux + "AND Id_usuario1_fk = " + this.threadID + ";");
+    		System.out.println("[DS] Peticion de desconexion de " + this.threadID  + " --> " + aux + "\n");
 			escrituraConsCliente.writeUTF("#te desconecto de la conversacion con el user ID: " + aux + "\n");
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -200,7 +217,8 @@ public class ServidorHilo extends Thread {
 			}else if(usuarioLog.size() == 1){
 				this.usuarioThread = usuarioLog.get(0);
 				this.threadID = this.usuarioThread.getId_usuario_PK();
-				escrituraConsCliente.writeUTF("Bienvenido " + this.usuarioThread.getNombre_usuario() + "!!.\n");
+				System.out.println("[LO] Peticion de logueo de " + this.threadID + "\n");
+				escrituraConsCliente.writeUTF("Bienvenido " + this.usuarioThread.getNombre_usuario() + "!!. User ID: " + this.threadID + "\n");
 			}else {
 				escrituraConsCliente.writeUTF("error de ambiguedad en los datos\n");
 			}

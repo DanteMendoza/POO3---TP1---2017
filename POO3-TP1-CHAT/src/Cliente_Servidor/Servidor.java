@@ -52,8 +52,29 @@ public class Servidor {
 		return this.conexionDB;
 	}
 	
-	public ArrayList<Mensajes> getMensajesPendientes(){
+	public ArrayList<Mensajes> obtenerMensajesPendientes(){
 		return this.mensajesPendientes;
+	}
+	
+	public void agregarMensajes(Mensajes unMensaje) {
+		this.mensajesPendientes.add(unMensaje);
+	}
+	
+	public synchronized Mensajes retirarMensajes(int pos) { //obtiene mensajes por posicion en el array
+		Mensajes aux = this.mensajesPendientes.get(pos);
+		this.mensajesPendientes.remove(pos);
+		return aux;
+	}
+	
+	public synchronized ArrayList<Mensajes> retirarMensajesPorID(int userID) { //obtiene los mensajes por id de usuario
+		ArrayList<Mensajes> aux = new ArrayList<Mensajes>(); //creo una lista
+		for(int i=0; i<this.mensajesPendientes.size(); i++) { //recorro mensajes pendientes
+			if(this.mensajesPendientes.get(i).getId_usuario2_FK() == userID) { //si hay algun mensaje cuyo id del destinatario coincida con mi id
+				aux.add(this.mensajesPendientes.get(i)); //lo agrego a la lista
+				this.mensajesPendientes.remove(i); //lo elimino de mensajes pendientes
+			}
+		}
+		return aux; //devuelvo la lista
 	}
 	
 	//Este metodo sirve para obtener la lista de usuarios que va a guardar el servidor, tambien deberá servir para actualizar
@@ -76,6 +97,18 @@ public class Servidor {
 		return this.listaConversaciones;
 	}
 	
+	public String obtenerNombreUsuario(int id) { //de seguro hay mejores formas
+		x.obtenerUsuarios();
+		String nom = "anon";
+		//System.out.println("tamanio listausers: " + this.listaUsers.size());
+		for(int i=0; i<this.listaUsers.size(); i++) {
+			if(this.listaUsers.get(i).getId_usuario_PK() == id) {
+				nom = this.listaUsers.get(i).getNombre_usuario();
+			}
+		}
+		return nom;
+	}
+	
 	public void iniciar() {
 		 System.out.print("Inicializando servidor... ");
 	        try {
@@ -94,6 +127,7 @@ public class Servidor {
 	            Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
 	        }
 	        x.obtenerUsuarios(); //Cada vez que inicia el server se conecta automaticamente a la BDD y obtiene la lista de usuarios
+	        x.obtenerConversaciones();
 	}
     
 }

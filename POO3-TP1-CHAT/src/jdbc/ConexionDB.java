@@ -49,7 +49,7 @@ public class ConexionDB {
     }
  
     public ArrayList<Usuarios> recuperarUsuarios(String cadena) throws SQLException {
-        System.out.println("INICIO DE RECUPERAR USUARIOS.");
+        //System.out.println("INICIO DE RECUPERAR USUARIOS.");
         ArrayList <Usuarios> arrayUsuarios = new ArrayList <Usuarios>();
         Usuarios usuario;
         conectar();
@@ -68,13 +68,13 @@ public class ConexionDB {
             cerrar(rs);
         }
         cerrar(st);
-        System.out.println("FIN DE RECUPERAR USUARIOS.");
+        //System.out.println("FIN DE RECUPERAR USUARIOS.");
         
         return arrayUsuarios;
     }
     
     public ArrayList<Conversaciones> recuperarConversaciones(String cadena) throws SQLException {
-        System.out.println("INICIO DE RECUPERAR CONVERSACIONES.");
+        //System.out.println("INICIO DE RECUPERAR CONVERSACIONES.");
         ArrayList <Conversaciones> arrayConversaciones = new ArrayList <Conversaciones>();
         Conversaciones conversacion;
         conectar();
@@ -93,7 +93,7 @@ public class ConexionDB {
             cerrar(rs);
         }
         cerrar(st);
-        System.out.println("FIN DE RECUPERAR CONVERSACIONES.");
+        //System.out.println("FIN DE RECUPERAR CONVERSACIONES.");
         
         return arrayConversaciones;
     }
