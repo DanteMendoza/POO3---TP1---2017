@@ -23,6 +23,7 @@ public class Servidor {
 	private ArrayList<Usuarios> listaUsers; //estructura de datos local para guardar la lista obtenida de la BDD
 	private ArrayList<Conversaciones> listaConversaciones; //Guarda todas las conversaciones activas de todos los usuarios activos
 	private ArrayList<Mensajes> mensajesPendientes; //Lista de mensajes pendientes de entrega
+	private ArrayList<Usuarios> listaUsersConectados;
 	
 	//Constructor privado
 	private Servidor(int puerto) {
@@ -32,6 +33,7 @@ public class Servidor {
 		this.conexionDB = ConexionDB.getConexionDB();
 		this.mensajesPendientes = new ArrayList<Mensajes>();
 		this.listaConversaciones = new ArrayList<Conversaciones>();
+		this.listaUsersConectados = new ArrayList<Usuarios>();
 	}
 
 	//Creo la única instancia
@@ -95,6 +97,23 @@ public class Servidor {
 			e.printStackTrace();
 		}
 		return this.listaConversaciones;
+	}
+	
+	public ArrayList<Usuarios> obtenerUsuariosConectados(){
+		return this.listaUsersConectados;
+	}
+	
+	public void agregarUsuarioConectado(Usuarios unUsuario) {
+		this.listaUsersConectados.add(unUsuario);
+	}
+	
+	public int retirarUsuarioConectado(int idUsuario) {
+		for(int i= 0; i< this.obtenerUsuariosConectados().size(); i++) {
+			if(this.obtenerUsuariosConectados().get(i).getId_usuario_PK() == idUsuario) {
+				this.obtenerUsuariosConectados().remove(i);
+			}
+		}
+		return 0;
 	}
 	
 	public String obtenerNombreUsuario(int id) { //de seguro hay mejores formas

@@ -61,7 +61,8 @@ public class ServidorHilo extends Thread {
     			System.out.println("Ha ocurrido un error en el registro\n");
     			return -1;
     		}
-    		this.usuarioThread = new Usuarios(this.threadID, aux, "1234"); 
+    		this.usuarioThread = new Usuarios(this.threadID, aux, "1234");
+    		this.server.agregarUsuarioConectado(this.usuarioThread); //agrego el usuario a la lista de conectados
 			this.server.getConexionDB().consultaActualiza("INSERT INTO usuarios(id_usuario_PK, nombre_usuario, password_usuario) VALUES (" + this.threadID + ", \'" + aux + "\', 1234);");
 			System.out.println("[UN] peticion de registro de un nuevo usuario: " + aux  + " | ID: " + this.threadID + "\n");
 			escrituraConsCliente.writeUTF("#registro el username: " + aux + ", su ID es: " + this.threadID + "\n");
@@ -216,6 +217,7 @@ public class ServidorHilo extends Thread {
 				return -1;
 			}else if(usuarioLog.size() == 1){
 				this.usuarioThread = usuarioLog.get(0);
+				this.server.agregarUsuarioConectado(this.usuarioThread); //agrego usuario logueado a la lista de conectados
 				this.threadID = this.usuarioThread.getId_usuario_PK();
 				System.out.println("[LO] Peticion de logueo de " + this.threadID + "\n");
 				escrituraConsCliente.writeUTF("Bienvenido " + this.usuarioThread.getNombre_usuario() + "!!. User ID: " + this.threadID + "\n");
@@ -229,9 +231,24 @@ public class ServidorHilo extends Thread {
     	return 0;
     }
     
+    //COMANDO: UC
+    private int usuariosConectados() {
+    	try {
+    	System.out.println("[UC] Peticion de mostrar usuarios conectados de: " + this.threadID + "\n");
+    	for(int i = 0; i < this.server.obtenerUsuariosConectados().size(); i++) {
+    		escrituraConsCliente.writeUTF(this.server.obtenerUsuariosConectados().get(i).getNombre_usuario() + " ");
+    		escrituraConsCliente.writeUTF(this.server.obtenerUsuariosConectados().get(i).getId_usuario_PK() + "\n");
+    	}
+    	} catch (IOException e) {
+			e.printStackTrace();
+		}
+    	return 0;
+    }
+    
     //Comando: EX
     private void desconectar(Socket unSoc) {
         try {
+        	this.server.retirarUsuarioConectado(this.threadID); //antes de cerrar la conexion con el server, quito mi usuario de la lista de conectados
         	escrituraConsCliente.writeUTF("#finalizo la conexion\n");
         	System.out.println("Conexion saliente: "+unSoc);
             socket.close();
@@ -284,6 +301,10 @@ public class ServidorHilo extends Thread {
             		}else if(comando.equals("GM")) {
                     	
                 			this.recibirMensaje();
+                    	
+                	}else if(comando.equals("UC")) {
+                    	
+                			this.usuariosConectados();
                     	
                 	}else if(comando.equals("DS")){
                 	
