@@ -58,14 +58,14 @@ public class ServidorHilo extends Thread {
     		String aux = unBuffer.substring(4, unBuffer.length());
     		this.threadID = this.server.obtenerUsuarios().size() + 1000;
     		if(this.threadID == 0) {
-    			System.out.println("Ha ocurrido un error en el registro\n");
+    			System.out.println("ERR Ha ocurrido un error en el registro\n");
     			return -1;
     		}
     		this.usuarioThread = new Usuarios(this.threadID, aux, "1234");
     		this.server.agregarUsuarioConectado(this.usuarioThread); //agrego el usuario a la lista de conectados
 			this.server.getConexionDB().consultaActualiza("INSERT INTO usuarios(id_usuario_PK, nombre_usuario, password_usuario) VALUES (" + this.threadID + ", \'" + aux + "\', 1234);");
 			System.out.println("[UN] peticion de registro de un nuevo usuario: " + aux  + " | ID: " + this.threadID + "\n");
-			escrituraConsCliente.writeUTF("#registro el username: " + aux + ", su ID es: " + this.threadID + "\n");
+			escrituraConsCliente.writeUTF("OK " + this.threadID);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -80,7 +80,7 @@ public class ServidorHilo extends Thread {
     	int idx = 0;
     	try {
     		if(this.usuarioThread.getId_usuario_PK() == 0) {
-        		escrituraConsCliente.writeUTF("No estas logueado, inicia sesion o registrate\n");
+        		escrituraConsCliente.writeUTF("ERR No estas logueado, inicia sesion o registrate\n");
         		return -1;
         	}
     		idx = this.server.obtenerConversaciones().size() + 2000;
@@ -88,7 +88,7 @@ public class ServidorHilo extends Thread {
     		this.server.getConexionDB().consultaActualiza("INSERT INTO conversaciones(id_conversacion_pk, id_usuario1_fk, id_usuario2_fk) VALUES (" + idx + ", " + this.threadID + ",  " + idDest + ");");
     		this.convsDelUsuario.add(new Conversaciones(idx, this.threadID, Integer.parseInt(idDest)));
     		System.out.println("[CN] Peticion de nueva conversacion: " + this.threadID + " --> " + idDest + "\n");
-			escrituraConsCliente.writeUTF("#Has creado una nueva conversacion con el cliente ID: " + idDest + "\n");
+			escrituraConsCliente.writeUTF("OK" + idDest);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -99,20 +99,25 @@ public class ServidorHilo extends Thread {
     private int enviarMensaje(String unBuffer) {
     	try {
     		if(unBuffer.length() <= 3) {
-    			escrituraConsCliente.writeUTF("no puedes enviar espacios en blanco\n");
+    			escrituraConsCliente.writeUTF("ERR no puedes enviar espacios en blanco\n");
     			return -1;
     		}
     		if(this.convsDelUsuario.size() == 0) {
-    			escrituraConsCliente.writeUTF("Error: no puedes enviar un mensaje sin antes crear una conversacion con otro usuario..intentalo con el comando CN -idusuuario\n");
+    			escrituraConsCliente.writeUTF("ERR no puedes enviar un mensaje sin antes crear una conversacion con otro usuario..intentalo con el comando CN -idusuuario\n");
     			return -1;
     		}
     		String mensaje = unBuffer.substring(4, unBuffer.length());
     		this.server.agregarMensajes(new Mensajes(this.convsDelUsuario.get(this.convsDelUsuario.size()-1), mensaje)); //El mensaje corresponde a la ultima conversacion abierta
 			//System.out.println("Mensajes pendientes del server: " + this.server.obtenerMensajesPendientes().size());
     		System.out.println("[TX] Peticion de envio de msj de " + this.threadID + "\n");
-    		escrituraConsCliente.writeUTF("#solicitud para enviar el mensaje: " + unBuffer.substring(4, unBuffer.length()) + "\n");
+    		escrituraConsCliente.writeUTF("OK");
 		} catch (Exception e) {
 			e.printStackTrace();
+			try {
+				escrituraConsCliente.writeUTF("ERR algo no salio bien");
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
 		}
     	return 0;
     }
@@ -124,12 +129,12 @@ public class ServidorHilo extends Thread {
     	//System.out.println("mensajes RECIBIDOS: " + this.mensajesRecibidos.size());
     	try {
     		if(this.mensajesRecibidos.size() == 0) {
-    			escrituraConsCliente.writeUTF("Por el momento no tienes mensajes\n");
+    			escrituraConsCliente.writeUTF("ERR Por el momento no tienes mensajes\n");
         		return -1;
         	}
     		String nombre = this.server.obtenerNombreUsuario(this.mensajesRecibidos.get(0).getId_usuario1_FK());
     		System.out.println("[GM] Peticion de " + this.threadID + " para recuperar mensajes\n");
-			escrituraConsCliente.writeUTF("Mensaje recibido de " +
+			escrituraConsCliente.writeUTF("OK " +
 					nombre + "(" + this.mensajesRecibidos.get(0).getId_usuario1_FK() + "): " + this.mensajesRecibidos.get(0).getTexto() + "\n");
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -150,11 +155,11 @@ public class ServidorHilo extends Thread {
     private int desconectarCli(String unBuffer) {
     	try {
     		if(this.usuarioThread.getId_usuario_PK() == 0) { //el id 0 significa que el user no esta logueado o no existe
-    			escrituraConsCliente.writeUTF("[DS] No estas logueado, inicia sesion o registrate\n");
+    			escrituraConsCliente.writeUTF("ERR No estas logueado, inicia sesion o registrate\n");
     			return -1;
     		}
     		if(this.convsDelUsuario.isEmpty()) { //no se puede desconectarse de una conversacion si nunca se la ha creado
-    			escrituraConsCliente.writeUTF("[DS] No tienes ninguna conversacion todavia\n");
+    			escrituraConsCliente.writeUTF("ERR No tienes ninguna conversacion todavia\n");
     			return -1;
     		}
     		int aux = Integer.parseInt(unBuffer.substring(4, unBuffer.length())); //parametro del comando (es el id al cual me quiero desconectar)
@@ -166,13 +171,13 @@ public class ServidorHilo extends Thread {
     			}
     		}
     		if(com) {
-    			escrituraConsCliente.writeUTF("[DS] No tienes ninguna conversacion con el ID que indicaste\n");
+    			escrituraConsCliente.writeUTF("ERR No tienes ninguna conversacion con el ID que indicaste\n");
     			return -1;
     		}
     		//Elimino el registro conversacion de la BDD:
     		this.server.getConexionDB().consultaActualiza("DELETE FROM conversaciones WHERE Id_usuario2_fk = " + aux + "AND Id_usuario1_fk = " + this.threadID + ";");
     		System.out.println("[DS] Peticion de desconexion de " + this.threadID  + " --> " + aux + "\n");
-			escrituraConsCliente.writeUTF("#te desconecto de la conversacion con el user ID: " + aux + "\n");
+			escrituraConsCliente.writeUTF("OK" + this.threadID);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -203,7 +208,7 @@ public class ServidorHilo extends Thread {
     	try {
     		String[] parts = unBuffer.split("-"); //divido la linea que recibo en partes
     		if(parts.length != 3) { //si las partes del buffer no son 3, significa que no se introdujo el usuario, la contrasenia o ambos
-    			escrituraConsCliente.writeUTF("has dejado en blanco el campo usuario o contrasenia\n");
+    			escrituraConsCliente.writeUTF("ERR Has dejado en blanco el campo usuario o contrasenia\n");
     			return -1;
     		}
     		String username = parts[1].replace(" ", ""); //asigno como username la segunda parte quitandole los espacios para evitar errores
@@ -213,16 +218,16 @@ public class ServidorHilo extends Thread {
 			ArrayList<Usuarios> usuarioLog = this.server.getConexionDB().recuperarUsuarios("SELECT * FROM usuarios WHERE nombre_usuario = \'" + username + "\' AND password_usuario = \'" + passwd + "\';");
 			//System.out.println(usuarioLog.size());
 			if(usuarioLog.isEmpty()) { //si lo que recibi esta vacio
-				escrituraConsCliente.writeUTF("[ERR_USER_NO_ENCONTRADO] No estas registrado en la base de datos o tu constrasenia no es correcta\n");
+				escrituraConsCliente.writeUTF("ERR No estas registrado en la base de datos o tu constrasenia no es correcta\n");
 				return -1;
 			}else if(usuarioLog.size() == 1){
 				this.usuarioThread = usuarioLog.get(0);
 				this.server.agregarUsuarioConectado(this.usuarioThread); //agrego usuario logueado a la lista de conectados
 				this.threadID = this.usuarioThread.getId_usuario_PK();
 				System.out.println("[LO] Peticion de logueo de " + this.threadID + "\n");
-				escrituraConsCliente.writeUTF("Bienvenido " + this.usuarioThread.getNombre_usuario() + "!!. User ID: " + this.threadID + "\n");
+				escrituraConsCliente.writeUTF("OK" + this.threadID);
 			}else {
-				escrituraConsCliente.writeUTF("error de ambiguedad en los datos\n");
+				escrituraConsCliente.writeUTF("ERR Error de ambiguedad en los datos\n");
 			}
 			
 		} catch (Exception e) {
@@ -235,12 +240,18 @@ public class ServidorHilo extends Thread {
     private int usuariosConectados() {
     	try {
     	System.out.println("[UC] Peticion de mostrar usuarios conectados de: " + this.threadID + "\n");
+    	escrituraConsCliente.writeUTF("OK");
     	for(int i = 0; i < this.server.obtenerUsuariosConectados().size(); i++) {
     		escrituraConsCliente.writeUTF(this.server.obtenerUsuariosConectados().get(i).getNombre_usuario() + " ");
     		escrituraConsCliente.writeUTF(this.server.obtenerUsuariosConectados().get(i).getId_usuario_PK() + "\n");
     	}
     	} catch (IOException e) {
 			e.printStackTrace();
+			try {
+				escrituraConsCliente.writeUTF("ERR Hubo un problema al recuperar la lista de usuarios conectados");
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
 		}
     	return 0;
     }
@@ -249,7 +260,7 @@ public class ServidorHilo extends Thread {
     private void desconectar(Socket unSoc) {
         try {
         	this.server.retirarUsuarioConectado(this.threadID); //antes de cerrar la conexion con el server, quito mi usuario de la lista de conectados
-        	escrituraConsCliente.writeUTF("#finalizo la conexion\n");
+        	escrituraConsCliente.writeUTF("OK " + this.threadID);
         	System.out.println("Conexion saliente: "+unSoc);
             socket.close();
         } catch (IOException ex) {
@@ -274,7 +285,7 @@ public class ServidorHilo extends Thread {
         		
         		if(lineaLeida.length() < 2) { //si la longitud del comando es menor a dos, lanza error
         			
-        			escrituraConsCliente.writeUTF("#[ERR_LONGITUD_MENOR_A_2] no entiendo el comando: " + lineaLeida + "\n");
+        			escrituraConsCliente.writeUTF("ERR La longitud de la entrada no puede ser menor a 2 caracteres\n");
         			
         		}else { //si no, se procede...
         			
@@ -327,7 +338,7 @@ public class ServidorHilo extends Thread {
                     	
                 	}else {
                 	
-            			escrituraConsCliente.writeUTF("#[ERR_COMANDO_NO_EXISTE] no entiendo el comando: " + lineaLeida + "\n");
+            			escrituraConsCliente.writeUTF("ERR No se ha encontrado el comando\n");
                 	
             		}
         		}
