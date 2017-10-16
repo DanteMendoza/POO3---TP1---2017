@@ -56,11 +56,11 @@ public class Servidor {
 		return this.mensajesPendientes;
 	}
 	
-	public void agregarMensajes(Mensajes unMensaje) {
+	public synchronized void agregarMensajes(Mensajes unMensaje){
 		this.mensajesPendientes.add(unMensaje);
 	}
 	
-	public synchronized Mensajes retirarMensajes(int pos) { //obtiene mensajes por posicion en el array
+	public synchronized Mensajes retirarMensajes(int pos){ //obtiene mensajes por posicion en el array
 		Mensajes aux = this.mensajesPendientes.get(pos);
 		this.mensajesPendientes.remove(pos);
 		return aux;

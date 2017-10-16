@@ -240,6 +240,7 @@ public class ServidorHilo extends Thread {
         }
     }
     
+    
     @Override
     public void run(){
     	//controla el bucle while
@@ -252,7 +253,8 @@ public class ServidorHilo extends Thread {
         		
         		//Leo la linea entera desde la consola de telnet
         		String lineaLeida = lecturaConsCliente.readLine();
-       
+        		
+        		
         		if(lineaLeida.length() < 2) { //si la longitud del comando es menor a dos, lanza error
         			
         			escrituraConsCliente.writeUTF("#[ERR_LONGITUD_MENOR_A_2] no entiendo el comando: " + lineaLeida + "\n");
