@@ -1,0 +1,29 @@
+﻿<Window x:Class="CHAT.Vista.Login"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:CHAT.Vista"
+      mc:Ignorable="d"
+      Title="Login"
+      Foreground="Black" Background="#FF912CB8" Height="180" Width="399">
+
+    <Grid Margin="49,0,0,18" Background="White" HorizontalAlignment="Left" Width="294" Height="78" VerticalAlignment="Bottom">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="110*"/>
+            <ColumnDefinition Width="37*"/>
+        </Grid.ColumnDefinitions>
+        <TextBox HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" Name="txtUserName" VerticalAlignment="Top" Width="160" Margin="21,30,0,0" BorderBrush="Black" Foreground="Black" SelectionBrush="Black" OpacityMask="Black"/>
+
+        <TextBlock HorizontalAlignment="Left" Margin="21,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="Black" RenderTransformOrigin="0.393,0.242" Width="70"><Run FontSize="18" FontFamily="Arial Narrow" Text="Usuario"/></TextBlock>
+
+        <Button Content="Ingresar" Margin="205,28,10,25" Click="btnLogin_click" BorderBrush="Black" Foreground="White" Background="#FFB2A3A3" RenderTransformOrigin="0.5,0.5" Height="25" FontFamily="Arial Narrow" OpacityMask="White" FontSize="16" Grid.ColumnSpan="2"/>
+
+        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Bottom" RenderTransformOrigin="-0.543,0.239" Margin="-31,-27,-49,84" FontFamily="Arial Narrow" Foreground="White" FontSize="18" Width="374" Grid.ColumnSpan="2"><Run Text="Por favor ingrese su "/><Run Text="usuario "/><Run Text="para ingresar al chat"/></TextBlock>
+        <TextBlock HorizontalAlignment="Left" Margin="21,58,0,-12" TextWrapping="Wrap" VerticalAlignment="Top" Width="237" Name="txtValidator" Text="Valide que el usuario haya sido ingresado" Foreground="#FFFF2E00" Visibility="Hidden" Grid.ColumnSpan="2"/>
+
+    </Grid>
+
+
+
+</Window>
