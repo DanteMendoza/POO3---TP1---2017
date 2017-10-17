@@ -242,8 +242,10 @@ public class ServidorHilo extends Thread {
     	System.out.println("[UC] Peticion de mostrar usuarios conectados de: " + this.threadID + "\n");
     	escrituraConsCliente.writeUTF("OK");
     	for(int i = 0; i < this.server.obtenerUsuariosConectados().size(); i++) {
-    		escrituraConsCliente.writeUTF(this.server.obtenerUsuariosConectados().get(i).getNombre_usuario() + " ");
-    		escrituraConsCliente.writeUTF(this.server.obtenerUsuariosConectados().get(i).getId_usuario_PK() + "\n");
+    		if(this.server.obtenerUsuariosConectados().get(i).getId_usuario_PK() != this.threadID) {
+    			escrituraConsCliente.writeUTF(this.server.obtenerUsuariosConectados().get(i).getNombre_usuario() + " ");
+        		escrituraConsCliente.writeUTF(this.server.obtenerUsuariosConectados().get(i).getId_usuario_PK() + "\n");
+    		}
     	}
     	} catch (IOException e) {
 			e.printStackTrace();
