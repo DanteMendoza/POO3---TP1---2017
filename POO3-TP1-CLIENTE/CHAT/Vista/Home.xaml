@@ -122,7 +122,7 @@
                 <Button Grid.Column="1" Grid.Row="2" HorizontalAlignment="Right" 
             MinWidth="55" Margin="0,3,3,3" Content="Chatear" Width="39" Visibility="Hidden" Click="Chat_Click" />
                 <Button Grid.Column="1" Grid.Row="3" HorizontalAlignment="Right" 
-            MinWidth="55" Margin="3" Content="Chatear"  Visibility="Hidden" Click="Chat_Click" />
+            MinWidth="55" Margin="0,3,3,3" Content="Chatear"  Visibility="Hidden" Click="Chat_Click" />
                 <Button Grid.Column="1" Grid.Row="4" HorizontalAlignment="Right" 
             MinWidth="55" Margin="3" Content="Chatear" Visibility="Hidden"  Click="Chat_Click"/>
                 <Button Grid.Column="1" Grid.Row="5" HorizontalAlignment="Right" 

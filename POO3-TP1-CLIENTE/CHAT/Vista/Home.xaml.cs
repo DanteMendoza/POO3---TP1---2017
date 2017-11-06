@@ -24,7 +24,6 @@ namespace CHAT.Vista
     public partial class Home : Page
     {
         private Login login { get; set; }
-        private IList<Usuario> UsuariosLogueados { get; set; }
         private bool IsUsuarioLogueado { get; set; }
         private static ClienteControlador controlerCliente;
         private List<string> msjsEnviados { get; set; }
@@ -37,9 +36,9 @@ namespace CHAT.Vista
         public Home()
         {
             InitializeComponent();
-            this.UsuariosLogueados = new List<Usuario>();
-            CompletarGrillaUsuarios(this.UsuariosLogueados);
             controlerCliente = new ClienteControlador();
+            CompletarGrillaUsuarios(controlerCliente.UsuariosConectados());
+
         }
 
         private void btnLogin_onClick(object sender, RoutedEventArgs e)
@@ -47,8 +46,7 @@ namespace CHAT.Vista
             if (IsUsuarioLogueado)
             {
                 controlerCliente.Desloguearse();
-                this.UsuariosLogueados = new List<Usuario>();
-                CompletarGrillaUsuarios(this.UsuariosLogueados);
+                CompletarGrillaUsuarios(controlerCliente.UsuariosConectados());
                 IsUsuarioLogueado = false;
                 TituloChat.Text = "Inicie sesión para chatear";
                 btnLogin.Content = "Iniciar Sesión";
@@ -65,10 +63,10 @@ namespace CHAT.Vista
         private void eventLogin(object sender, RoutedEventArgs args)
         {
             controlerCliente.CrearUsuario((string)sender);
-            UsuariosLogueados = controlerCliente.Loguearse((string)sender);
+            controlerCliente.Loguearse((string)sender);
             IsUsuarioLogueado = true;
             //puede devolver error
-            CompletarGrillaUsuarios(UsuariosLogueados);
+            CompletarGrillaUsuarios(controlerCliente.UsuariosConectados());
             btnLogin.Content = "Cerrar Sesión";
             TituloChat.Text = "Seleccione un usuario para chatear";
             login.Close();
@@ -76,47 +74,51 @@ namespace CHAT.Vista
 
         private void CompletarGrillaUsuarios(IList<Usuario> usuariosLogueados)
         {
-            IEnumerator enumeratorGrid = grUsers.Children.GetEnumerator();
-            int i = 0;
-            while (i < 22)
+            if (usuariosLogueados != null)
             {
-                enumeratorGrid.MoveNext();
-                Object gridChildren = (object)enumeratorGrid.Current;
-                if (gridChildren.GetType().Name.Equals("Label"))
+                IEnumerator enumeratorGrid = grUsers.Children.GetEnumerator();
+                int i = 0;
+                while (i < 22)
                 {
-                    Label lblUser = (Label)gridChildren;
-                    string userText = "";
-                    if (i < usuariosLogueados.Count)
+                    enumeratorGrid.MoveNext();
+                    Object gridChildren = (object)enumeratorGrid.Current;
+                    if (gridChildren.GetType().Name.Equals("Label"))
                     {
-                        userText = usuariosLogueados[i].UserName;
+                        Label lblUser = (Label)gridChildren;
+                        string userText = "";
+                        if (i < usuariosLogueados.Count)
+                        {
+                            userText = usuariosLogueados[i].UserName;
+                        }
+                        lblUser.Content = userText;
                     }
-                    lblUser.Content = userText;
-                }
-                if (gridChildren.GetType().Name.Equals("Button"))
-                {
-                    i = i - 11;
-                    Button btnChat = (Button)gridChildren;
-                    Visibility visible = Visibility.Hidden;
-                    Object dataContext = null;
-                    if (i < usuariosLogueados.Count)
+                    if (gridChildren.GetType().Name.Equals("Button"))
                     {
-                        dataContext = usuariosLogueados[i];
-                        visible = Visibility.Visible;
+                        i = i - 11;
+                        Button btnChat = (Button)gridChildren;
+                        Visibility visible = Visibility.Hidden;
+                        int dataContext = 0;
+                        if (i < usuariosLogueados.Count)
+                        {
+                            dataContext = usuariosLogueados[i].Id;
+                            visible = Visibility.Visible;
+                        }
+                        btnChat.DataContext = dataContext;
+                        btnChat.Visibility = visible;
+                        i = i + 11;
                     }
-                    btnChat.DataContext = dataContext;
-                    btnChat.Visibility = visible;
-                    i = i + 11;
+                    i++;
                 }
-                i++;
             }
         }
 
         private void Chat_Click(object sender, RoutedEventArgs e)
         {
             Button btnChat = (Button)sender;
-            Usuario userChat = (Usuario)btnChat.DataContext;
+            int idUserChat = (int)btnChat.DataContext;
+            Usuario userChat = controlerCliente.UsuariosConectados().FirstOrDefault(x => x.Id == idUserChat);
             RefrescarPantalla(userChat.UserName);
-            controlerCliente.IniciarChat(userChat.UserName);
+            controlerCliente.IniciarChat(idUserChat);
             msjsEnviados = new List<string>();
             btnEnviar.IsEnabled = true;
         }
@@ -126,17 +128,17 @@ namespace CHAT.Vista
             //vacio la grilla
             CompletarGrillaUsuarios(new List<Usuario>());
 
-            Usuario userConversando = new Usuario("",0);
-            foreach (Usuario user in this.UsuariosLogueados)
+            Usuario userConversando = new Usuario("", 0);
+            foreach (Usuario user in controlerCliente.UsuariosConectados())
             {
                 if (user.UserName.Equals(userName))
                 {
                     userConversando = user;
                 }
             }
-            this.UsuariosLogueados.Remove(userConversando);
+            controlerCliente.UsuariosConectados().Remove(userConversando);
             TituloChat.Text = userName;
-            CompletarGrillaUsuarios(this.UsuariosLogueados);
+            CompletarGrillaUsuarios(controlerCliente.UsuariosConectados());
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -146,7 +148,7 @@ namespace CHAT.Vista
             CompletarGrillaChat();
             txtMsg.Text = "";
         }
-        
+
         private void CompletarGrillaChat()
         {
             IEnumerator enumeratorGrid = grChat.Children.GetEnumerator();

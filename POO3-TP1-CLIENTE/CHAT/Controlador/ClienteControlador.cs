@@ -13,10 +13,13 @@ namespace CHAT.Controlador
 {
     public class ClienteControlador
     {
-        public string Mensaje { get; set; }
-        public Socket Socket { get; set; }
+        private Socket Socket { get; set; }
         public ConfiguracionSingleton Configuracion { get; set; }
-        public Cliente Cliente { get; set; }
+        private Cliente Cliente { get; set; }
+
+        public IList<Usuario> UsuariosConectados() {
+            return Cliente.UsuariosConectados;
+        }
 
         public ClienteControlador()
         {
@@ -50,39 +53,46 @@ namespace CHAT.Controlador
                 string response = EnviarRequestAlServidor(EnumProtocolo.Codigo.LOGIN, userName, "1234");
                 Cliente.UsuarioLogueado = new Usuario(userName, int.Parse(response));
                 response = EnviarRequestAlServidor(EnumProtocolo.Codigo.VER_USUARIOS_CONECTADOS, String.Empty, String.Empty);
-                string[] usersString = response.Split('\n');
-                foreach (string userString in usersString)
+                if (String.IsNullOrEmpty(response))
                 {
-                    if (!String.IsNullOrEmpty(userString))
+                    response = EnviarRequestAlServidor(EnumProtocolo.Codigo.VER_USUARIOS_CONECTADOS, String.Empty, String.Empty);
+                }
+                string[] usersString = response.Split('\n');
+                for (int i = 0; i < usersString.Length; i++)
+                {
+                    if ((i % 2) == 0)
                     {
-                        int posicionParaSplit = 0;
-                        for (int x = 0; x < userString.Length; x++)
+                        if (!String.IsNullOrEmpty(usersString[i]))
                         {
-                            char c = userString.ToCharArray()[x];
-                            if (!Char.IsLetterOrDigit(c))
+                            int posicionParaSplit = 0;
+                            for (int x = 0; x < usersString[i].Length; x++)
                             {
-                                posicionParaSplit = x;
+                                char c = usersString[i].ToCharArray()[x];
+                                if (!Char.IsLetterOrDigit(c))
+                                {
+                                    posicionParaSplit = x;
+                                }
                             }
-                        }    
-                        string split = userString.Substring(posicionParaSplit, 1);
-                        string[] usersPass = userString.Split(char.Parse(split));
-                        List<string> usersPassListSinVacios = new List<string>();
-                        foreach (string userPass in usersPass)
-                        {
-                            if (!String.IsNullOrEmpty(userPass))
+                            string split = usersString[i].Substring(posicionParaSplit, 1);
+                            string[] usersPass = usersString[i].Split(char.Parse(split));
+                            List<string> usersPassListSinVacios = new List<string>();
+                            foreach (string userPass in usersPass)
                             {
-                                usersPassListSinVacios.Add(userPass);
+                                if (!String.IsNullOrEmpty(userPass))
+                                {
+                                    usersPassListSinVacios.Add(userPass);
+                                }
                             }
+                            Usuario usuario = new Usuario();
+                            string name = usersPassListSinVacios[0];
+                            if (!Char.IsLetterOrDigit(Char.Parse(name.Substring(0, 1))))
+                            {
+                                name = name.Substring(1, name.Length - 2);
+                            }
+                            usuario.UserName = name;
+                            usuario.Id = int.Parse(usersPassListSinVacios[1]);
+                            usuarios.Add(usuario);
                         }
-                        Usuario usuario = new Usuario();
-                        string name = usersPassListSinVacios[0];
-                        if (!Char.IsLetterOrDigit(Char.Parse(name.Substring(0, 1))))
-                        {
-                            name = name.Substring(1,name.Length -2);
-                        }
-                        usuario.UserName = name;
-                        usuario.Id = int.Parse(usersPassListSinVacios[1]);
-                        usuarios.Add(usuario);
                     }
                 }
             }
@@ -91,6 +101,7 @@ namespace CHAT.Controlador
             {
                 //do
             }
+            Cliente.UsuariosConectados = usuarios;
             return usuarios;
 
         }
@@ -104,10 +115,9 @@ namespace CHAT.Controlador
 
         }
 
-        public void IniciarChat(string userName)
+        public void IniciarChat(int idUser)
         {
-            Usuario user = Cliente.UsuariosConectados.First(x => x.UserName.Equals(userName));
-            EnviarRequestAlServidor(EnumProtocolo.Codigo.INICIO_CHAT, user.Id.ToString(), String.Empty);
+            EnviarRequestAlServidor(EnumProtocolo.Codigo.INICIO_CHAT, idUser.ToString(), String.Empty);
         }
 
         public void EnviarMsg(string mensaje)
@@ -117,7 +127,7 @@ namespace CHAT.Controlador
 
         public void CerrarConexion()
         {
-            EnviarRequestAlServidor(EnumProtocolo.Codigo.DESCONECTAR, String.Empty, String.Empty);
+            //            EnviarRequestAlServidor(EnumProtocolo.Codigo.DESCONECTAR, String.Empty, String.Empty);
         }
 
         public void CrearUsuario(string userName)
