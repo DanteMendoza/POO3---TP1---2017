@@ -187,12 +187,12 @@ public class ServidorHilo extends Thread {
     //Metodo creado para debug, responde al comando QC
     private void consultarUsuarios() throws SQLException, IOException {
     	for(int i=0; i< this.server.obtenerUsuarios().size(); i++) {
-    		escrituraConsCliente.writeUTF(this.server.obtenerUsuarios().get(i).getNombre_usuario() + " ");
-    		escrituraConsCliente.writeUTF(this.server.obtenerUsuarios().get(i).getId_usuario_PK() + "\n");
+    		escrituraConsCliente.writeUTF(this.server.obtenerUsuarios().get(i).getNombre_usuario() + " " + this.server.obtenerUsuarios().get(i).getId_usuario_PK() + "\n");
     	}
     }
     
     //Otro metodo creado para debug, tambien responde al comando QC
+    /*
     private void consultarConversaciones() throws SQLException, IOException {
     	for(int i=0; i<this.server.obtenerConversaciones().size(); i++) {
     		escrituraConsCliente.writeUTF(this.server.obtenerConversaciones().get(i).getId_conversacion_PK() + " ");
@@ -200,7 +200,7 @@ public class ServidorHilo extends Thread {
     		escrituraConsCliente.writeUTF(this.server.obtenerConversaciones().get(i).getId_usuario2_FK() + "\n");
     	}
     }
-    
+    */
     //busca en funcion del nombre y la contraseña
     //modelo de comando:
 	//LO -Fernando -1234
@@ -243,8 +243,7 @@ public class ServidorHilo extends Thread {
     	escrituraConsCliente.writeUTF("OK");
     	for(int i = 0; i < this.server.obtenerUsuariosConectados().size(); i++) {
     		if(this.server.obtenerUsuariosConectados().get(i).getId_usuario_PK() != this.threadID) {
-    			escrituraConsCliente.writeUTF(this.server.obtenerUsuariosConectados().get(i).getNombre_usuario() + " ");
-        		escrituraConsCliente.writeUTF(this.server.obtenerUsuariosConectados().get(i).getId_usuario_PK() + "\n");
+    			escrituraConsCliente.writeUTF(this.server.obtenerUsuariosConectados().get(i).getNombre_usuario() + " " + this.server.obtenerUsuariosConectados().get(i).getId_usuario_PK() + "\n");
     		}
     	}
     	} catch (IOException e) {
