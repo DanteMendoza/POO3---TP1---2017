@@ -99,6 +99,10 @@ public class Servidor {
 		return this.listaConversaciones;
 	}
 	
+	public ArrayList<Conversaciones> getConversaciones(){
+		return this.listaConversaciones;
+	}
+	
 	public ArrayList<Usuarios> obtenerUsuariosConectados(){
 		return this.listaUsersConectados;
 	}

@@ -83,8 +83,17 @@ public class ServidorHilo extends Thread {
         		escrituraConsCliente.writeUTF("ERR No estas logueado, inicia sesion o registrate\n");
         		return -1;
         	}
-    		idx = this.server.obtenerConversaciones().size() + 2000;
+    		
     		String idDest = unBuffer.substring(4, unBuffer.length());
+    		ArrayList<Conversaciones> listConvAux = this.server.obtenerConversaciones();
+    		for(int i= 0; i < listConvAux.size(); i++) {
+    			if(listConvAux.get(i).getId_usuario2_FK() == Integer.parseInt(idDest) || listConvAux.get(i).getId_usuario1_FK() == this.threadID) {
+    				escrituraConsCliente.writeUTF("ERR El ID de usuario que especificaste ya tiene una conversacion activa o tu ya has creado una conversacion\n");
+            		return -1;
+    			}
+    		}
+    		
+    		idx = this.server.obtenerConversaciones().size() + 2000;
     		this.server.getConexionDB().consultaActualiza("INSERT INTO conversaciones(id_conversacion_pk, id_usuario1_fk, id_usuario2_fk) VALUES (" + idx + ", " + this.threadID + ",  " + idDest + ");");
     		this.convsDelUsuario.add(new Conversaciones(idx, this.threadID, Integer.parseInt(idDest)));
     		System.out.println("[CN] Peticion de nueva conversacion: " + this.threadID + " --> " + idDest + "\n");
@@ -125,9 +134,16 @@ public class ServidorHilo extends Thread {
     //Comando: GM (obtener mensajes)
     //Por ahora, este comando lo debe ejecutar el usuario para ver si recibio mensajes...
     private int recibirMensaje() {
-    	this.mensajesRecibidos = this.server.retirarMensajesPorID(this.threadID);
-    	//System.out.println("mensajes RECIBIDOS: " + this.mensajesRecibidos.size());
     	try {
+    		/* preguntar si tengo alguien quiere conversar conmigo antes, si no, el metodo finaliza diciendo que no tengo ninguna conversacion
+    		 * es decir, no voy a tener mensajes pendientes
+    		if(this.tengoUnaConversacion() == -1) {
+    			return -1;
+    		}
+    		*/
+    		this.mensajesRecibidos = this.server.retirarMensajesPorID(this.threadID);
+    		//System.out.println("mensajes RECIBIDOS: " + this.mensajesRecibidos.size());
+    	
     		if(this.mensajesRecibidos.size() == 0) {
     			escrituraConsCliente.writeUTF("ERR Por el momento no tienes mensajes\n");
         		return -1;
@@ -257,6 +273,34 @@ public class ServidorHilo extends Thread {
     	return 0;
     }
     
+    //Comando PC:
+    //metodo que sirve para que un hilo sepa que alguien creo una conversacion con el como destinatario
+    //si alguien creo una conversacion conmigo, el metodo devuelve el id de esa conversacion
+    //de lo contrario, devuelve -1
+    //El hilo que creo la conversacion con otro e ingresa el comando, recibe el id de la conversacion que acaba de crear
+    private int tengoUnaConversacion() {
+    	int verificar = -1;
+    	System.out.println("[PC] Solicitud de: " + this.threadID + " para ver si alguien se quiere conectar con el\n");
+    	for(int i=0; i<this.server.obtenerConversaciones().size(); i++) {
+    		if(this.server.obtenerConversaciones().get(i).getId_usuario2_FK() == this.threadID) {
+    			verificar = this.server.obtenerConversaciones().get(i).getId_conversacion_PK();
+    		}
+    	}
+    	try {
+			if(verificar == -1) {
+				escrituraConsCliente.writeUTF("ERR Sin conversaciones por el momento");
+			}else {
+				escrituraConsCliente.writeUTF("OK " + verificar);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    	return verificar;
+    }
+    
+    
+    
+    
     //Comando: EX
     private void desconectar(Socket unSoc) {
         try {
@@ -322,7 +366,11 @@ public class ServidorHilo extends Thread {
                 	
             			this.desconectarCli(lineaLeida);
                 	
-            		}else if(comando.equals("EX")) {
+            		}else if(comando.equals("PC")) {
+                    	
+                		this.tengoUnaConversacion();
+                    	
+                	}else if(comando.equals("EX")) {
                 	
             			this.desconectar(this.socket);
             			conectado = false;

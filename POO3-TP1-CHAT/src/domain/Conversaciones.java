@@ -7,7 +7,9 @@ public class Conversaciones {
 	private int id_usuario2_FK;
 	
 	public Conversaciones(){
-		
+		this.id_conversacion_PK = 0;
+		this.id_usuario1_FK = 0;
+		this.id_usuario2_FK = 0;
 	}
 	
 	public Conversaciones(int id_conversacion_PK, int id_usuario1_FK, int id_usuario2_FK){
