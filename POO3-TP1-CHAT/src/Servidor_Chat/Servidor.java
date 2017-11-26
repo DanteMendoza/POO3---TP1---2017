@@ -82,7 +82,18 @@ public class Servidor {
 		return aux; //devuelvo la lista
 	}
 	
-	
+	//obtengo mensajes especificos que pertenescan a la conversacion especificada y cuyo id especificado no hay emitido el mensaje.
+	public synchronized ArrayList<Mensajes> syncRetirarMensajesPorIDyConversacion(int conversacionID, int userID) {
+		ArrayList<Mensajes> aux = new ArrayList<Mensajes>(); //creo una lista
+		try {
+			aux = this.conexionDB.recuperarMensajes("SELECT m.id_mensaje_pk, m.id_conversacion, m.emisor, m.texto_mensaje, m.leido FROM conversaciones c, "
+					+ "mensajes m WHERE c.id_conversacion_PK = m.id_conversacion AND m.id_conversacion = " + conversacionID + " AND m.leido = 'NO' AND m.emisor <> " + userID + ";");
+		} catch (SQLException e) {
+			System.out.println("Servidor: retirarMensajesPorID() ha reportado un error");
+			e.printStackTrace();
+		}		
+		return aux; //devuelvo la lista
+	}
 	
 	
 	//Este metodo sirve para obtener la lista de usuarios que va a guardar el servidor, tambien deberá servir para actualizar

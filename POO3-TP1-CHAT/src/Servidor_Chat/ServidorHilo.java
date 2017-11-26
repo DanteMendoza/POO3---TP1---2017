@@ -179,7 +179,6 @@ public class ServidorHilo extends Thread {
     }
     
     //GM
-    //GM
     private int recibirMensaje() {
     	
     	/*
@@ -198,7 +197,7 @@ public class ServidorHilo extends Thread {
     			return -1;
     		}
     		
-    		this.mensajesRecibidos = this.server.syncRetirarMensajesPorID(this.threadID); //Sincronizacion del metodo
+    		this.mensajesRecibidos = this.server.syncRetirarMensajesPorIDyConversacion(this.convDelUsuario, this.threadID); //Sincronizacion del metodo
     		
     		if(this.mensajesRecibidos.size() == 0) {
     			escrituraConsCliente.writeUTF("ERR Por el momento no tienes mensajes [DETALLE: MSJS_RECIB_" + this.mensajesRecibidos.size() + "]\n");
@@ -220,7 +219,6 @@ public class ServidorHilo extends Thread {
     	//System.out.println("mensajes recibidos: " + this.mensajesRecibidos.size());
     }
     
-    //DS
     //DS
     private int desconectarCli(String unBuffer) {
     	
@@ -267,7 +265,6 @@ public class ServidorHilo extends Thread {
     }
     
     //QC
-    //QC
     private void consultarUsuarios() throws SQLException, IOException {
     	
     	/*
@@ -286,7 +283,6 @@ public class ServidorHilo extends Thread {
     }
     
     //LO
-	//LO
     private int loguear(String unBuffer) {
     	
     	/*
@@ -328,7 +324,6 @@ public class ServidorHilo extends Thread {
     }
     
     //UC
-    //UC
     private int mostrarUsuariosConectados() {
     	
     	/*
@@ -360,7 +355,6 @@ public class ServidorHilo extends Thread {
     	return 0;
     }
     
-    //PC
     //PC
     private int tengoUnaConversacion() {
     	
@@ -396,7 +390,6 @@ public class ServidorHilo extends Thread {
     	return verificar;
     }
     
-    //EX
     //EX
     private void desconectar(Socket unSoc) {
     	
