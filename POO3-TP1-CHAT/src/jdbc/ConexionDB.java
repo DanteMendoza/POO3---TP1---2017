@@ -4,6 +4,7 @@ import java.sql.*;
 import java.util.ArrayList;
 
 import domain.Conversaciones;
+import domain.Mensajes;
 import domain.Usuarios;
 
 public class ConexionDB {
@@ -60,9 +61,9 @@ public class ConexionDB {
         if (rs != null) { 
             while (rs.next()) {
             	usuario = new Usuarios();
-            	usuario.setId_usuario_PK( (int) rs.getObject("id_usuario_PK"));
-            	usuario.setNombre_usuario( (String)  rs.getObject("nombre_usuario"));
-            	usuario.setPassword_usuario( (String)  rs.getObject("password_usuario"));
+            	usuario.setIDUsuario( (int) rs.getObject("id_usuario_PK"));
+            	usuario.setNombreUsuario( (String)  rs.getObject("nombre_usuario"));
+            	usuario.setPasswordUsuario( (String)  rs.getObject("password_usuario"));
             	arrayUsuarios.add(usuario);
             }
             cerrar(rs);
@@ -72,6 +73,34 @@ public class ConexionDB {
         
         return arrayUsuarios;
     }
+    
+    public ArrayList<Mensajes> recuperarMensajes(String cadena) throws SQLException {
+        //System.out.println("INICIO DE RECUPERAR Mensajes.");
+        ArrayList <Mensajes> arrayMensajes = new ArrayList <Mensajes>();
+        Mensajes mensaje;
+        conectar();
+        Statement st = conexion();
+ 
+        // Se sacan los datos de la tabla usuarios
+        ResultSet rs = consultaQuery (st, cadena);
+        if (rs != null) { 
+            while (rs.next()) {
+            	mensaje = new Mensajes();
+            	mensaje.setIDMensaje( (int) rs.getObject("id_mensaje_pk"));
+            	mensaje.setIDConversacion( (int)  rs.getObject("id_conversacion"));
+            	mensaje.setEmisor((int) rs.getObject("emisor"));
+            	mensaje.setTextoMensaje( (String)  rs.getObject("texto_mensaje"));
+            	mensaje.setLeido((String) rs.getObject("leido"));
+            	arrayMensajes.add(mensaje);
+            }
+            cerrar(rs);
+        }
+        cerrar(st);
+        //System.out.println("FIN DE RECUPERAR USUARIOS.");
+        
+        return arrayMensajes;
+    }
+    
     
     public ArrayList<Conversaciones> recuperarConversaciones(String cadena) throws SQLException {
         //System.out.println("INICIO DE RECUPERAR CONVERSACIONES.");
@@ -85,9 +114,9 @@ public class ConexionDB {
         if (rs != null) { 
             while (rs.next()) {
             	conversacion = new Conversaciones();
-            	conversacion.setId_conversacion_PK( (int) rs.getObject("id_conversacion_PK"));
-            	conversacion.setId_usuario1_FK( (int)  rs.getObject("id_usuario1_FK"));
-            	conversacion.setId_usuario2_FK( (int)  rs.getObject("id_usuario2_FK"));
+            	conversacion.setIDConversacion( (int) rs.getObject("id_conversacion_PK"));
+            	conversacion.setIDUsuario1( (int)  rs.getObject("id_usuario1_FK"));
+            	conversacion.setIDUsuario2( (int)  rs.getObject("id_usuario2_FK"));
             	arrayConversaciones.add(conversacion);
             }
             cerrar(rs);

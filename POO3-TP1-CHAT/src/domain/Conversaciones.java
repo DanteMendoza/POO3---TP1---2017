@@ -2,51 +2,52 @@ package domain;
 
 public class Conversaciones {
 	
-	private int id_conversacion_PK;
-	private int id_usuario1_FK;
-	private int id_usuario2_FK;
+	private int idConversacion;
+	private int idUsuario1;
+	private int idUsuario2;
 	
 	public Conversaciones(){
-		this.id_conversacion_PK = 0;
-		this.id_usuario1_FK = 0;
-		this.id_usuario2_FK = 0;
+		this.idConversacion = 0;
+		this.idUsuario1 = 0;
+		this.idUsuario2 = 0;
 	}
 	
-	public Conversaciones(int id_conversacion_PK, int id_usuario1_FK, int id_usuario2_FK){
-		this.setId_conversacion_PK(id_conversacion_PK);
-		this.setId_usuario1_FK(id_usuario1_FK);
-		this.setId_usuario2_FK(id_usuario2_FK);
+	public Conversaciones(int id_conversacion, int id_usuario1, int id_usuario2){
+		this.idConversacion = id_conversacion;
+		this.idUsuario1 = id_usuario1;
+		this.idUsuario2 = id_usuario2;
 	}
 	
-	public int getId_conversacion_PK() {
-		return id_conversacion_PK;
+	public int getIDConversacion() {
+		return idConversacion;
 	}
 
-	public void setId_conversacion_PK(int id_conversacion_PK) {
-		this.id_conversacion_PK = id_conversacion_PK;
+	public void setIDConversacion(int idConversacion) {
+		this.idConversacion = idConversacion;
 	}
 
-	public int getId_usuario1_FK() {
-		return id_usuario1_FK;
+	public void setIDUsuario1(int idUsuario1) {
+		this.idUsuario1 = idUsuario1;
 	}
 
-	public void setId_usuario1_FK(int id_usuario1_FK) {
-		this.id_usuario1_FK = id_usuario1_FK;
+	public void setIDUsuario2(int idUsuario2) {
+		this.idUsuario2 = idUsuario2;
 	}
 
-	public int getId_usuario2_FK() {
-		return id_usuario2_FK;
+	public int getIDUsuario1() {
+		return idUsuario1;
 	}
 
-	public void setId_usuario2_FK(int id_usuario2_FK) {
-		this.id_usuario2_FK = id_usuario2_FK;
+	public int getIDUsuario2() {
+		return idUsuario2;
 	}
+
 
 	@Override
 	public String toString() {
-		return "id_conversacion_PK: " + this.getId_conversacion_PK()
-				+ "\n id_usuario1_FK: " + this.getId_usuario1_FK() + "\n id_usuario2_FK: "
-				+ this.getId_usuario2_FK();
+		return "id_conversacion_PK: " + this.getIDConversacion()
+				+ "\n id_usuario1_FK: " + this.getIDUsuario1() + "\n id_usuario2_FK: "
+				+ this.getIDUsuario2();
 	}
 
 }

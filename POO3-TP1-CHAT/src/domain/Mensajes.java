@@ -1,24 +1,59 @@
 package domain;
 
-public class Mensajes extends Conversaciones{
+public class Mensajes{
+
+	private int idMensaje;
+	private int idConversacion;
+	private int emisor;
+	private String textoMensaje;
+	private String leido;
 	
-	private String texto;
+	public Mensajes() {
+		
+	}
+
 	
-	public Mensajes(Conversaciones unaConv) {
-		super(unaConv.getId_conversacion_PK(), unaConv.getId_usuario1_FK(), unaConv.getId_usuario2_FK());
-		this.texto = "Hola!, soy un mensaje";
+	public int getEmisor() {
+		return emisor;
+	}
+
+
+	public void setEmisor(int emisor) {
+		this.emisor = emisor;
+	}
+
+	public int getIDMensaje() {
+		return idMensaje;
 	}
 	
-	public Mensajes(Conversaciones unaConv, String unMsj) {
-		super(unaConv.getId_conversacion_PK(), unaConv.getId_usuario1_FK(), unaConv.getId_usuario2_FK());
-		this.texto = unMsj;
+	public String getLeido() {
+		return leido;
+	}
+
+	public void setLeido(String leido) {
+		this.leido = leido;
+	}
+
+	public void setIDMensaje(int idMensaje) {
+		this.idMensaje = idMensaje;
+	}
+
+	public int getIDConversacion() {
+		return idConversacion;
+	}
+
+	public void setIDConversacion(int idConversacion) {
+		this.idConversacion = idConversacion;
+	}
+
+	public String getTextoMensaje() {
+		return textoMensaje;
+	}
+
+	public void setTextoMensaje(String textoMensaje) {
+		this.textoMensaje = textoMensaje;
 	}
 	
-	public String getTexto() {
-		return this.texto;
-	}
+
 	
-	public void setTexto(String unTexto) {
-		this.texto = unTexto;
-	}
 }

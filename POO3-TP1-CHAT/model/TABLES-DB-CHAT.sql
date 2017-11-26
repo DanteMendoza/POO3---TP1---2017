@@ -76,33 +76,32 @@ VALUES (2004, 1000, 1001);
 CREATE TABLE IF NOT EXISTS mensajes (
   id_mensaje_PK int NOT NULL,
   id_conversacion int NULL,
+  emisor int NOT NULL,
   texto_mensaje TEXT NULL,
+  leido TEXT NOT NULL,
   PRIMARY KEY (id_mensaje_PK) 
 );
 
 
--- -----------------------------------------------------
--- INSERTS "mensajes" Insercion de Datos.
--- -----------------------------------------------------
-DELETE FROM mensajes;
-INSERT INTO mensajes(id_mensaje_PK, id_conversacion, texto_mensaje)
-VALUES (3000, 4000, '- Hola como estas? salimos este sabado para el cine?');
-INSERT INTO mensajes(id_mensaje_PK, id_conversacion, texto_mensaje)
-VALUES (3001, 4001, '- Queria decirte que lo del viernes se suspende, lo siento mucho');
-INSERT INTO mensajes(id_mensaje_PK, id_conversacion, texto_mensaje)
-VALUES (3002, 4002, '- La verdad no entendi nada de la charla orientativa, me pregunto que intentaron decir?');
-INSERT INTO mensajes(id_mensaje_PK, id_conversacion, texto_mensaje)
-VALUES (3003, 4003, '- ya tengo todo comprado para la fiesta!');
-INSERT INTO mensajes(id_mensaje_PK, id_conversacion, texto_mensaje)
-VALUES (3004, 4004, '- jajaja en serio? uy en un re lio te metiste!');
 
 
 -- -----------------------------------------------------
 -- CONSULTAS.
 -- -----------------------------------------------------
+DELETE FROM mensajes;
+DELETE FROM conversaciones;
+DELETE FROM usuarios;
+
+
 SELECT * FROM usuarios;
 SELECT * FROM conversaciones;
 SELECT * FROM mensajes;
+
+
+
+
+
+
 
 
 
