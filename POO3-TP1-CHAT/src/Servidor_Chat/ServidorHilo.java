@@ -382,7 +382,8 @@ public class ServidorHilo extends Thread {
 				escrituraConsCliente.writeUTF("ERR Sin conversaciones por el momento [DETALLE: ID_CONVERSACION_VERIF_" + verificar + "]\n");
 			}else {
 				this.convDelUsuario = verificar;
-				escrituraConsCliente.writeUTF("OK " + "[ ID_CONV_" + verificar + " | " + this.threadID + " >========< " + this.server.obtenerDestConversacion(verificar, this.threadID) + "]\n");
+				//escrituraConsCliente.writeUTF("OK " + "[ ID_CONV_" + verificar + " | " + this.threadID + " >========< " + this.server.obtenerDestConversacion(verificar, this.threadID) + "]\n");
+				escrituraConsCliente.writeUTF("OK " + this.server.obtenerDestConversacion(verificar, this.threadID) + "\n");
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
