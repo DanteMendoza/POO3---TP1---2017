@@ -137,7 +137,7 @@ public class ServidorHilo extends Thread {
     	return 0;
     }
     
-    //TX
+    //L
     private int enviarMensaje(String unBuffer) {
     	
     	/*
@@ -285,7 +285,7 @@ public class ServidorHilo extends Thread {
     	StringBuilder listaBuilder = new StringBuilder();
     	listaBuilder.append("OK ");
     	for(int i=0; i< this.server.getUsersModel().size(); i++) {
-    		listaBuilder.append(this.server.getUsersModel().get(i).getNombreUsuario() + " " + this.server.getUsersModel().get(i).getIDUsuario() + " ");
+    		listaBuilder.append(this.server.getUsersModel().get(i).getNombreUsuario() + " " + this.server.getUsersModel().get(i).getIDUsuario() + "/>*<");
     	}
     	listaBuilder.append("\n");
     	String lista = listaBuilder.toString();
@@ -347,7 +347,7 @@ public class ServidorHilo extends Thread {
     	listaBuilder.append("OK ");
     	for(int i = 0; i < this.server.getUsuariosConectados().size(); i++) {
     		if(this.server.getUsuariosConectados().get(i).getIDUsuario() != this.threadID) {
-    			listaBuilder.append(this.server.getUsuariosConectados().get(i).getNombreUsuario() + " " + this.server.getUsuariosConectados().get(i).getIDUsuario() + " ");
+    			listaBuilder.append(this.server.getUsuariosConectados().get(i).getNombreUsuario() + " " + this.server.getUsuariosConectados().get(i).getIDUsuario() + "/>*<"); 
     		}
     	}
     	listaBuilder.append("\n");
