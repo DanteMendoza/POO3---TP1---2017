@@ -125,7 +125,8 @@ public class ServidorHilo extends Thread {
     				+ "VALUES (" + idx + ", " + this.threadID + ",  " + idDest + ");");
     		
     		System.out.println("[CN] Peticion de nueva conversacion: " + this.threadID + " --> " + idDest + "\n");
-			escrituraConsCliente.writeUTF("OK " + this.threadID + " >========< " + idDest + "\n");
+			//escrituraConsCliente.writeUTF("OK " + this.threadID + " >========< " + idDest + "\n");
+    		escrituraConsCliente.writeUTF("OK " + this.convDelUsuario + "\n");
 		} catch (Exception e) {
 			try {
 				escrituraConsCliente.writeUTF("ERR " + "No es posible conectar al ID especificado\n");
