@@ -137,7 +137,7 @@ public class ServidorHilo extends Thread {
     	return 0;
     }
     
-    //L
+    //TX
     private int enviarMensaje(String unBuffer) {
     	
     	/*
@@ -274,6 +274,32 @@ public class ServidorHilo extends Thread {
     	return 0;
     }
     
+    //LU
+    private int cerrarSesion() {
+    	
+    	try {
+    		if(this.usuarioThread.getIDUsuario() == 0) { //el id 0 significa que el user no esta logueado o no existe
+    			escrituraConsCliente.writeUTF("ERR No estas logueado [DETALLE: ERROR_GET_ID_USUARIO_" + this.usuarioThread.getIDUsuario() + "]\n");
+    			return -1;
+    		}
+    		System.out.println("[LU] Peticion de desconexion de " + this.threadID  + "\n");
+    		this.server.getConexionDB().consultaActualiza("DELETE FROM mensajes WHERE id_conversacion = " + this.convDelUsuario + ";"); //borro los mensajes que pertenescan a la conversacion a eliminar
+    		this.convDelUsuario = 0; //elimino la referencia
+    		this.server.getConexionDB().consultaActualiza("DELETE FROM conversaciones WHERE Id_usuario2_fk = " + this.threadID + "OR Id_usuario1_fk = " + this.threadID + ";"); //Elimina las conversaciones en las que aparesca yo
+    		this.server.retirarUsuarioConectadoPorID(this.threadID); //retiro mi user de la lista de conectados
+    		this.mensajesRecibidos.clear(); //borro la lista de mensajes recibidos
+    		this.usuarioThread = new Usuarios(); //reinicio mi objeto usuario borrando sus datos
+    		this.threadID = 0; //finalmente borro mi id
+    		escrituraConsCliente.writeUTF("OK\n");
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    	return 0;
+    	
+    }
+    
+    
     //QC
     private void consultarUsuarios() throws SQLException, IOException {
     	
@@ -347,7 +373,7 @@ public class ServidorHilo extends Thread {
     	listaBuilder.append("OK ");
     	for(int i = 0; i < this.server.getUsuariosConectados().size(); i++) {
     		if(this.server.getUsuariosConectados().get(i).getIDUsuario() != this.threadID) {
-    			listaBuilder.append(this.server.getUsuariosConectados().get(i).getNombreUsuario() + " " + this.server.getUsuariosConectados().get(i).getIDUsuario() + "/>*<"); 
+    			listaBuilder.append(this.server.getUsuariosConectados().get(i).getNombreUsuario() + " " + this.server.getUsuariosConectados().get(i).getIDUsuario() + "/>*<");
     		}
     	}
     	listaBuilder.append("\n");
@@ -483,6 +509,11 @@ public class ServidorHilo extends Thread {
                     	
             			sleep(100);
                 		this.tengoUnaConversacion();
+                    	
+                	}else if(comando.equals("LU")) {
+                    	
+            			sleep(100);
+                		this.cerrarSesion();
                     	
                 	}else if(comando.equals("EX")) {
                 	
