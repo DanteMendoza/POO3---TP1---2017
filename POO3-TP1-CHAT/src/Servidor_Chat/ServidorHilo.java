@@ -208,10 +208,20 @@ public class ServidorHilo extends Thread {
     		String nombreDelOtroUsuario = this.server.obtenerNombreUsuarioPorID(idDelOtroUsuario);
     		
     		System.out.println("[GM] Peticion de " + this.threadID + " para recuperar mensajes\n");
-			escrituraConsCliente.writeUTF("OK " +
-				nombreDelOtroUsuario + "(" + idDelOtroUsuario + "): " + this.mensajesRecibidos.get(0).getTextoMensaje() + "\n");
-			this.server.getConexionDB().consultaActualiza("UPDATE mensajes SET leido = 'SI' WHERE id_mensaje_pk = " + this.mensajesRecibidos.get(0).getIDMensaje() + ";");
-			this.mensajesRecibidos.remove(0);
+    		
+    		
+    		StringBuilder listaBuilder = new StringBuilder();
+        	listaBuilder.append("OK ");
+        	for(int i=0; i< this.mensajesRecibidos.size(); i++) {
+        		listaBuilder.append(this.mensajesRecibidos.get(i).getEmisor() + " " + this.mensajesRecibidos.get(i).getTextoMensaje() + " ");
+        	}
+        	listaBuilder.append("\n");
+        	String lista = listaBuilder.toString();
+        	escrituraConsCliente.writeUTF(lista);
+    		
+    		
+			this.server.getConexionDB().consultaActualiza("UPDATE mensajes SET leido = 'SI' WHERE emisor = " + idDelOtroUsuario + ";");
+			this.mensajesRecibidos.clear();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
