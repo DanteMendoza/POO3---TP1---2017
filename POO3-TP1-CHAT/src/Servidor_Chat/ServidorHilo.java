@@ -419,7 +419,7 @@ public class ServidorHilo extends Thread {
 			}else {
 				this.convDelUsuario = verificar;
 				//escrituraConsCliente.writeUTF("OK " + "[ ID_CONV_" + verificar + " | " + this.threadID + " >========< " + this.server.obtenerDestConversacion(verificar, this.threadID) + "]\n");
-				escrituraConsCliente.writeUTF("OK " + this.server.obtenerDestConversacion(verificar, this.threadID) + "\n");
+				escrituraConsCliente.writeUTF("OK " + this.server.obtenerDestConversacion(verificar, this.threadID) + " " + verificar + "\n");
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
