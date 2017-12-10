@@ -211,9 +211,9 @@ public class ServidorHilo extends Thread {
     		
     		
     		StringBuilder listaBuilder = new StringBuilder();
-        	listaBuilder.append("OK ");
+        	listaBuilder.append("OK " + idDelOtroUsuario + " ");
         	for(int i=0; i< this.mensajesRecibidos.size(); i++) {
-        		listaBuilder.append(this.mensajesRecibidos.get(i).getEmisor() + " " + this.mensajesRecibidos.get(i).getTextoMensaje() + " ");
+        		listaBuilder.append("/>*<" + this.mensajesRecibidos.get(i).getTextoMensaje());
         	}
         	listaBuilder.append("\n");
         	String lista = listaBuilder.toString();
