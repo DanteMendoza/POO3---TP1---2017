@@ -1,190 +1,158 @@
-﻿using System;
+﻿using CHAT.Modelo;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using CHAT.Modelo;
-using System.Runtime.Remoting.Messaging;
 
 namespace CHAT.Controlador
 {
     public class ClienteControlador
     {
-        private Socket Socket { get; set; }
-        public ConfiguracionSingleton Configuracion { get; set; }
         private Cliente Cliente { get; set; }
 
-        public IList<Usuario> UsuariosConectados() {
-            return Cliente.UsuariosConectados;
+        //public IList<Usuario> UsuariosConectados()
+        //{
+        //    return Cliente.UsuariosConectados;
+        //}
+
+        public IList<Usuario> UsuariosConectados()
+        {
+            return Cliente.GetUsuariosConectados();
+        }
+
+        public bool IsConversacionActiva()
+        {
+            return Cliente.IsConversacionActiva();
+        }
+
+        public IList<MensajeVista> GetMensajes()
+        {
+            return Cliente.GetMensajes();
+        }
+
+        //public Usuario UsuarioConversando()
+        //{
+        //    return Cliente.Conversacion.UsuarioConversando;
+        //}
+
+        public Usuario UsuarioConversando()
+        {
+            return Cliente.Getconversacion().UsuarioConversando;
         }
 
         public ClienteControlador()
         {
             try
             {
-                byte[] bytes = new byte[1024];
-                Configuracion = ConfiguracionSingleton.ObtenerInstancia();
-                IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
-                IPAddress ipAddress = ipHostInfo.AddressList.
-                    FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork);
-                IPEndPoint remoteEP = new IPEndPoint(ipAddress, Configuracion.Puerto);
-                Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                //Inicio conexion con el servidor
+                MiddlewareServer.EstablecerConexionConServidor();
 
-                //Abro conexion
-                Socket.Connect(remoteEP);
-                Socket.Receive(bytes);
-                Console.WriteLine("Recibido = {0}", Encoding.ASCII.GetString(bytes));
+                //Instancio un nuevo cliente
                 Cliente = new Cliente();
             }
-            catch (SocketException ex)
+            catch (SocketException)
             {
-                Console.WriteLine("Error al conectarse al servidor. {0}", ex.Message);
+                throw new ExceptionServer("Error de conexión con el servidor. Por favor intente más tarde.");
             }
         }
 
-        public IList<Usuario> Loguearse(string userName)
+        public void Loguearse(string userName)
         {
-            List<Usuario> usuarios = new List<Usuario>();
-            try
-            {
-                string response = EnviarRequestAlServidor(EnumProtocolo.Codigo.LOGIN, userName, "1234");
-                Cliente.UsuarioLogueado = new Usuario(userName, int.Parse(response));
-                response = EnviarRequestAlServidor(EnumProtocolo.Codigo.VER_USUARIOS_CONECTADOS, String.Empty, String.Empty);
-                if (String.IsNullOrEmpty(response))
-                {
-                    response = EnviarRequestAlServidor(EnumProtocolo.Codigo.VER_USUARIOS_CONECTADOS, String.Empty, String.Empty);
-                }
-                string[] usersString = response.Split('\n');
-                for (int i = 0; i < usersString.Length; i++)
-                {
-                    if ((i % 2) == 0)
-                    {
-                        if (!String.IsNullOrEmpty(usersString[i]))
-                        {
-                            int posicionParaSplit = 0;
-                            for (int x = 0; x < usersString[i].Length; x++)
-                            {
-                                char c = usersString[i].ToCharArray()[x];
-                                if (!Char.IsLetterOrDigit(c))
-                                {
-                                    posicionParaSplit = x;
-                                }
-                            }
-                            string split = usersString[i].Substring(posicionParaSplit, 1);
-                            string[] usersPass = usersString[i].Split(char.Parse(split));
-                            List<string> usersPassListSinVacios = new List<string>();
-                            foreach (string userPass in usersPass)
-                            {
-                                if (!String.IsNullOrEmpty(userPass))
-                                {
-                                    usersPassListSinVacios.Add(userPass);
-                                }
-                            }
-                            Usuario usuario = new Usuario();
-                            string name = usersPassListSinVacios[0];
-                            if (!Char.IsLetterOrDigit(Char.Parse(name.Substring(0, 1))))
-                            {
-                                name = name.Substring(1, name.Length - 2);
-                            }
-                            usuario.UserName = name;
-                            usuario.Id = int.Parse(usersPassListSinVacios[1]);
-                            usuarios.Add(usuario);
-                        }
-                    }
-                }
-            }
+            string response = MiddlewareServer.EnviarRequestAlServidor(EnumProtocolo.Codigo.LOGIN, userName, "1234");
+            //Cliente.UsuarioLogueado = new Usuario(userName, int.Parse(response));
+            Cliente.SetUsuarioLogueado(new Usuario(userName, int.Parse(response)));
+        }
 
-            catch (ExceptionServer ex)
-            {
-                //do
-            }
-            Cliente.UsuariosConectados = usuarios;
-            return usuarios;
+        public void VerUsuariosConectados()
+        {
+            string response = MiddlewareServer.EnviarRequestAlServidor(EnumProtocolo.Codigo.VER_USUARIOS_CONECTADOS, String.Empty, String.Empty);
+            Cliente.SetUsuariosConectados(MiddlewareServer.ArmarListaDeUsuarios(response));
+        }
 
+        public void VerUsuarios()
+        {
+            string response = MiddlewareServer.EnviarRequestAlServidor(EnumProtocolo.Codigo.VER_USUARIOS, String.Empty, String.Empty);
+            Cliente.Usuarios = MiddlewareServer.ArmarListaDeUsuarios(response);
         }
 
         public void Desloguearse()
         {
-            EnviarRequestAlServidor(EnumProtocolo.Codigo.FIN_CHAT, String.Empty, String.Empty);
-            Usuario userLogueado = Cliente.UsuarioLogueado;
-            //envio codigo + user
-            Cliente.UsuarioLogueado = null;
-
+            MiddlewareServer.EnviarRequestAlServidor(EnumProtocolo.Codigo.CERRAR_SESION, String.Empty, String.Empty);
+            Cliente.DesLoguear();
         }
 
         public void IniciarChat(int idUser)
         {
-            EnviarRequestAlServidor(EnumProtocolo.Codigo.INICIO_CHAT, idUser.ToString(), String.Empty);
+            string respuesta = MiddlewareServer.EnviarRequestAlServidor(EnumProtocolo.Codigo.INICIO_CHAT, idUser.ToString(), String.Empty);
+            int idConversacion = int.Parse(respuesta);
+            Cliente.IniciarConversacion(idUser, idConversacion);
         }
 
         public void EnviarMsg(string mensaje)
         {
-            EnviarRequestAlServidor(EnumProtocolo.Codigo.ENVIO_MSG, mensaje, String.Empty);
+            try
+            {
+                MiddlewareServer.EnviarRequestAlServidor(EnumProtocolo.Codigo.ENVIO_MSG, mensaje, String.Empty);
+                Cliente.AgregarMensajesEnviados(mensaje);
+            }
+            catch (ExceptionUserAware)
+            {
+            }
         }
 
-        public void CerrarConexion()
+        public void FinalizarConversacion()
         {
-            //            EnviarRequestAlServidor(EnumProtocolo.Codigo.DESCONECTAR, String.Empty, String.Empty);
+            try
+            {
+                int idUsuario = Cliente.GetUsuarioConversando();
+                MiddlewareServer.EnviarRequestAlServidor(EnumProtocolo.Codigo.FIN_CHAT, idUsuario.ToString(), String.Empty);
+                Cliente.FinalizarConversacion();
+            }
+            catch (ExceptionUserAware)
+            {
+            }
         }
 
         public void CrearUsuario(string userName)
         {
-            EnviarRequestAlServidor(EnumProtocolo.Codigo.CREAR_USUARIO, userName, String.Empty);
+            MiddlewareServer.EnviarRequestAlServidor(EnumProtocolo.Codigo.CREAR_USUARIO, userName, String.Empty);
         }
 
-        private string EnviarRequestAlServidor(EnumProtocolo.Codigo codigo, string parametro, string parametro2)
+        public void RecibirMensajes()
         {
-            string respuesta = String.Empty;
             try
             {
-                string codigoString = EnumProtocolo.CodigoToString(codigo);
-                if (!String.IsNullOrEmpty(parametro))
-                {
-                    parametro = " -" + parametro;
-                    if (!String.IsNullOrEmpty(parametro2))
-                    {
-                        parametro = parametro + " -" + parametro2;
-                    }
-                }
-                byte[] msg = Encoding.ASCII.GetBytes(codigoString + parametro + "\n");
-                byte[] bytes = new byte[1024];
-                Socket.Send(msg);
-                Socket.Receive(bytes);
-                Console.WriteLine("Recibido = {0}", Encoding.ASCII.GetString(bytes));
-                if (!InterpretarRespuestaDelServidor(bytes, ref respuesta))
-                {
-                    throw new ExceptionServer(respuesta);
-                }
+                string respuesta = MiddlewareServer.EnviarRequestAlServidor(EnumProtocolo.Codigo.RECIBIR_MENSAJES, String.Empty, String.Empty);
+                char[] separador = "//>*<'".ToCharArray();
+                string[] respuestaSplit = respuesta.Split(separador);
+                IList<string> mensajes = respuestaSplit.ToList();
+                mensajes.RemoveAt(0);
+                mensajes = mensajes.Where(r => !String.IsNullOrEmpty(r)).ToList();
+                Cliente.AgregarMensajesRecibidos(mensajes);
             }
-            catch (SocketException ex)
+            catch (ExceptionUserAware)
             {
-                //do
             }
-            return respuesta;
         }
 
-        private bool InterpretarRespuestaDelServidor(byte[] bytes, ref string parametroDevuelto)
+        public bool VerificarSiHayConversacionExistente()
         {
-            string ok = "OK";
-            string error = "ERR";
-            string respuesta = Encoding.ASCII.GetString(bytes);
-            int lengthTotal = respuesta.Length;
-            int lengthFlag = 2;
-            bool esValido = true;
-            if (respuesta.Substring(2, ok.Length).Equals(ok))
+            bool conversacionNueva = false;
+            try
             {
-                lengthFlag = lengthFlag + ok.Length;
+                string respuesta = MiddlewareServer.EnviarRequestAlServidor(EnumProtocolo.Codigo.IS_CONVERSACION_EXISTENTE, String.Empty, String.Empty);
+                string[] respuestaSplit= respuesta.Split(' ');
+                int idUsuario = int.Parse(respuestaSplit[0]);
+                int idConversacion = int.Parse(respuestaSplit[1]);
+                conversacionNueva = Cliente.IniciarConversacion(idUsuario, idConversacion);
             }
-            else if (respuesta.Substring(2, error.Length).Equals(error))
+            catch (ExceptionUserAware)
             {
-                lengthFlag = lengthFlag + error.Length;
-                esValido = false;
+                Cliente.FinalizarConversacion();
             }
-            parametroDevuelto = respuesta.Substring(lengthFlag, lengthTotal - 1 - lengthFlag).Trim().Replace("\0", "");
-            return esValido;
+            return conversacionNueva;
         }
     }
 }

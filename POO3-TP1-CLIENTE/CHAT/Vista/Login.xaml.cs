@@ -30,13 +30,21 @@ namespace CHAT.Vista
 
         private void btnLogin_click(object sender, RoutedEventArgs e)
         {
-            if (String.IsNullOrEmpty(txtUserName.Text)){
-                txtValidator.Visibility = Visibility.Visible;
+            MostrarErrores("", Visibility.Hidden);
+            if (String.IsNullOrEmpty(txtUserName.Text))
+            {
+                MostrarErrores("Valide que el usuario haya sido ingresado", Visibility.Visible);
             }
             else if (handlerLogin != null)
             {
                 handlerLogin(txtUserName.Text, e);
             }
+        }
+
+        public void MostrarErrores(string msg, Visibility visibility)
+        {
+            txtValidator.Visibility = visibility;
+            txtValidator.Text = msg;
         }
     }
 }

@@ -6,21 +6,23 @@
       xmlns:local="clr-namespace:CHAT.Vista"
       mc:Ignorable="d"
       Title="Login"
-      Foreground="Black" Background="#FF912CB8" Height="180" Width="399">
+      Foreground="Black" Background="#FF912CB8" Height="180" Width="399"
+      WindowStartupLocation="CenterScreen">
 
-    <Grid Margin="49,0,0,18" Background="White" HorizontalAlignment="Left" Width="294" Height="78" VerticalAlignment="Bottom">
+    <Grid Margin="49,0,0,3.974" Background="White" HorizontalAlignment="Left" Width="322.831" Height="92.026" VerticalAlignment="Bottom">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="110*"/>
-            <ColumnDefinition Width="37*"/>
+            <ColumnDefinition Width="26*"/>
+            <ColumnDefinition Width="216*"/>
+            <ColumnDefinition Width="81*"/>
         </Grid.ColumnDefinitions>
-        <TextBox HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" Name="txtUserName" VerticalAlignment="Top" Width="160" Margin="21,30,0,0" BorderBrush="Black" Foreground="Black" SelectionBrush="Black" OpacityMask="Black"/>
+        <TextBox HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" Name="txtUserName" VerticalAlignment="Top" Width="160" Margin="21,30,0,0" BorderBrush="Black" Foreground="Black" SelectionBrush="Black" OpacityMask="Black" Grid.ColumnSpan="2"/>
 
-        <TextBlock HorizontalAlignment="Left" Margin="21,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="Black" RenderTransformOrigin="0.393,0.242" Width="70"><Run FontSize="18" FontFamily="Arial Narrow" Text="Usuario"/></TextBlock>
+        <TextBlock HorizontalAlignment="Left" Margin="21,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="Black" RenderTransformOrigin="0.393,0.242" Width="70" Grid.ColumnSpan="2"><Run FontSize="18" FontFamily="Arial Narrow" Text="Usuario"/></TextBlock>
 
-        <Button Content="Ingresar" Margin="205,28,10,25" Click="btnLogin_click" BorderBrush="Black" Foreground="White" Background="#FFB2A3A3" RenderTransformOrigin="0.5,0.5" Height="25" FontFamily="Arial Narrow" OpacityMask="White" FontSize="16" Grid.ColumnSpan="2"/>
+        <Button Content="Ingresar" Margin="179.299,30,10,37.026" Click="btnLogin_click" BorderBrush="Black" Foreground="White" Background="#FFB2A3A3" RenderTransformOrigin="0.5,0.5" Height="25" FontFamily="Arial Narrow" OpacityMask="White" FontSize="16" Grid.ColumnSpan="2" Grid.Column="1"/>
 
-        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Bottom" RenderTransformOrigin="-0.543,0.239" Margin="-31,-27,-49,84" FontFamily="Arial Narrow" Foreground="White" FontSize="18" Width="374" Grid.ColumnSpan="2"><Run Text="Por favor ingrese su "/><Run Text="usuario "/><Run Text="para ingresar al chat"/></TextBlock>
-        <TextBlock HorizontalAlignment="Left" Margin="21,58,0,-12" TextWrapping="Wrap" VerticalAlignment="Top" Width="237" Name="txtValidator" Text="Valide que el usuario haya sido ingresado" Foreground="#FFFF2E00" Visibility="Hidden" Grid.ColumnSpan="2"/>
+        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Bottom" RenderTransformOrigin="-0.543,0.239" Margin="-28.662,-39.944,-22.507,111.272" FontFamily="Arial Narrow" Foreground="White" FontSize="18" Width="374" Grid.ColumnSpan="3"><Run Text="Por favor ingrese su "/><Run Text="usuario "/><Run Text="para ingresar al chat"/></TextBlock>
+        <TextBlock HorizontalAlignment="Left" Margin="21,58,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="237" Name="txtValidator" Text="Valide que el usuario haya sido ingresado" Foreground="#FFFF2E00" Visibility="Hidden" Grid.ColumnSpan="3"/>
 
     </Grid>
 

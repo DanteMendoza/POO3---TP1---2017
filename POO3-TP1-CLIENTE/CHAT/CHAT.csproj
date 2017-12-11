@@ -54,6 +54,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </ApplicationDefinition>
+    <Page Include="Vista\Error.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Vista\Home.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -75,8 +79,15 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Modelo\Conversacion.cs" />
     <Compile Include="Modelo\Cliente.cs" />
     <Compile Include="Modelo\ExceptionServer.cs" />
+    <Compile Include="Modelo\ExceptionUserAware.cs" />
+    <Compile Include="Modelo\MensajeVista.cs" />
+    <Compile Include="Modelo\MiddlewareServer.cs" />
+    <Compile Include="Vista\Error.xaml.cs">
+      <DependentUpon>Error.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Vista\Home.xaml.cs">
       <DependentUpon>Home.xaml</DependentUpon>
     </Compile>

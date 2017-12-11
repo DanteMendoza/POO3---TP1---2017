@@ -7,5 +7,6 @@
         mc:Ignorable="d"
         Title="Chat" 
         Height="630" Width="700"
-        Source="Home.xaml" Closed="NavigationWindow_Closed">
+        Source="Home.xaml" Closed="NavigationWindow_Closed"
+        WindowStartupLocation="CenterScreen">
 </NavigationWindow>

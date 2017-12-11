@@ -13,7 +13,7 @@ namespace CHAT.Modelo
         public enum Codigo
         {
             [Description("LO")]
-            LOGIN= 0,
+            LOGIN = 0,
             [Description("UN")]
             CREAR_USUARIO = 1,
             [Description("CN")]
@@ -24,10 +24,17 @@ namespace CHAT.Modelo
             FIN_CHAT = 4,
             [Description("EX")]
             DESCONECTAR = 5,
-            [Description("QC")]
-            VER_USUARIOS_EN_BASE = 6,
+            [Description("GM")]
+            RECIBIR_MENSAJES = 6,
             [Description("UC")]
-            VER_USUARIOS_CONECTADOS = 7
+            VER_USUARIOS_CONECTADOS = 7,
+            [Description("PC")]
+            IS_CONVERSACION_EXISTENTE = 8,
+            [Description("QC")]
+            VER_USUARIOS = 9,
+            [Description("LU")]
+            CERRAR_SESION = 10
+
         }
 
         public static string CodigoToString(Enum codigo)

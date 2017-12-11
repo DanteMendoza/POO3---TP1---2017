@@ -16,18 +16,18 @@ using System.Windows.Shapes;
 namespace CHAT.Vista
 {
     /// <summary>
-    /// Lógica de interacción para MainWindow.xaml
+    /// Lógica de interacción para Error.xaml
     /// </summary>
-    public partial class MainWindow : NavigationWindow
+    public partial class Error : Window
     {
-        public MainWindow()
+        public Error()
         {
             InitializeComponent();
         }
 
-        private void NavigationWindow_Closed(object sender, EventArgs e)
+        public void MostrarError(string msg)
         {
-            //Home.ControlerCliente().CerrarConexion();
+            txtValidator.Text = msg;
         }
     }
 }
