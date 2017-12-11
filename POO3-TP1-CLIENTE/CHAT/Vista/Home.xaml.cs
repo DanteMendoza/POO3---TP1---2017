@@ -26,6 +26,11 @@ namespace CHAT.Vista
     /// </summary>
     public partial class Home : Page
     {
+        private static string SELECCIONE_USUARIO = "Seleccione un usuario para chatear";
+        private static string INICIE_SESION = "Inicie sesión para chatear";
+        private static string LOGUEAR = "Iniciar sesión";
+        private static string DESLOGUEAR = "Cerrar sesión";
+        private static string SIN_USUARIOS = "No hay usuarios conectados";
 
         private readonly object _syncRoot = new Object();
         private Login login { get; set; }
@@ -63,15 +68,12 @@ namespace CHAT.Vista
             try
             {
                 controlerCliente = new ClienteControlador();
-                CompletarGrillaUsuarios(new List<Usuario>());
-
+                RefrescarAccionesYTitulos();
+                RefrescarUsuariosConectados();
             }
             catch (ExceptionServer ex)
             {
-                MostrarError(ex.Message);
-                System.Threading.Thread.Sleep(3000);
-                Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
-                Application.Current.Shutdown();
+                MostrarError(ex.Message, true);
             }
         }
 
@@ -118,57 +120,48 @@ namespace CHAT.Vista
             {
                 //Le pido al servidor los usuarios
                 controlerCliente.VerUsuarios();
-
-                PreguntarSiHayUnaConversacion();
             }
             catch (ExceptionServer ex)
             {
-                MostrarError(ex.Message);
+                MostrarError(ex.Message, true);
             }
+
+            PreguntarSiHayUnaConversacion();
         }
 
         private void PreguntarSiHayUnaConversacion()
         {
             Task.Factory.StartNew(() =>
             {
-                while (IsUsuarioLogueado())
+                bool hayError = false;
+                string error = "";
+                while (IsUsuarioLogueado() && !hayError)
                 {
                     Thread.Sleep(1000);
                     DispatcherOperation op = Dispatcher.BeginInvoke((Action)(() =>
                     {
-                        bool isConversando = controlerCliente.IsConversacionActiva();
-
-                        //Le pido al servidor si hay conversacion existente
-                        bool conversacionNueva = controlerCliente.VerificarSiHayConversacionExistente();
-
-                        //Le pido al servidor los usuarios conectados
-                        controlerCliente.VerUsuariosConectados();
-
-                        //Adaptar vista
-                        if (controlerCliente.IsConversacionActiva())
+                        try
                         {
-                            controlerCliente.RecibirMensajes();
-                            if (conversacionNueva) RefrescarPantallaConConversacion(controlerCliente.UsuarioConversando().UserName, true, true, true);
-                            else RefrescarPantallaConConversacion(controlerCliente.UsuarioConversando().UserName, true, true, false);
-                        }
-                        else
-                        {
-                            if (controlerCliente.UsuariosConectados().Count == 0 && IsUsuarioLogueado())
+                            //Le pido al servidor si hay conversacion existente
+                            bool conversacionNueva = controlerCliente.VerificarSiHayConversacionExistente();
+
+                            //Le pido al servidor los usuarios conectados
+                            controlerCliente.VerUsuariosConectados();
+
+                            //Adaptar vista
+                            if (controlerCliente.IsConversacionActiva())
                             {
-                                TituloChat.Text = "No hay usuarios conectados";
-                                CompletarGrillaUsuarios(new List<Usuario>());
-                            }
-                            else
-                            {
-                                if (IsUsuarioLogueado()) RefrescarPantallaConConversacion(String.Empty, true, false, true);
-                                else RefrescarPantallaConConversacion(String.Empty, true, false, false);
-                            }
-                            if (isConversando)
-                            {
-                                if (IsUsuarioLogueado()) RefrescarPantallaConConversacion(String.Empty, true, true, true);
-                                else RefrescarPantallaConConversacion(String.Empty, true, true, false);
+                                controlerCliente.RecibirMensajes();
                             }
                         }
+                        catch (ExceptionServer ex)
+                        {
+                            MostrarError(ex.Message, false);
+                            hayError = true;
+                        }
+                        RefrescarAccionesYTitulos();
+                        RefrescarUsuariosConectados();
+                        CompletarGrillaChat();
                     }));
                 }
             });
@@ -182,14 +175,15 @@ namespace CHAT.Vista
                 controlerCliente.Desloguearse();
 
                 //Si deslogueo en servidor es correcto, adapto la vista
-                RefrescarPantallaConConversacion(String.Empty, true, false, true);
                 SetIsUsuarioLogueado(false);
-                TituloChat.Text = "Inicie sesión para chatear";
-                btnLogin.Content = "Iniciar Sesión";
+
+                RefrescarAccionesYTitulos();
+                RefrescarUsuariosConectados();
+                CompletarGrillaChat();
             }
             catch (ExceptionServer ex)
             {
-                MostrarError(ex.Message);
+                MostrarError(ex.Message, true);
             }
         }
 
@@ -199,62 +193,23 @@ namespace CHAT.Vista
             dgUsers.Items.Refresh();
         }
 
-        private void RefrescarPantallaConConversacion(string userName, bool mostrarUsuariosConectados, bool conversacionActiva, bool refrescarAcciones)
-        {
-            //refrescar usuarios conectados
-            if (mostrarUsuariosConectados)
-            {
-                CompletarGrillaUsuarios(new List<Usuario>());
-
-                Usuario userConversando = new Usuario("", 0);
-                foreach (Usuario user in controlerCliente.UsuariosConectados())
-                {
-                    if (user.UserName.Equals(userName))
-                    {
-                        userConversando = user;
-                    }
-                }
-                controlerCliente.UsuariosConectados().Remove(userConversando);
-                CompletarGrillaUsuarios(controlerCliente.UsuariosConectados());
-            }
-
-            //refrescar acciones y titulos en conversacion
-            if (refrescarAcciones) RefrescarAccionesConversacion(conversacionActiva, userName);
-
-            //refrescar mensajes
-            CompletarGrillaChat();
-        }
-
-        private void RefrescarAccionesConversacion(bool conversacionActiva, string userName)
-        {
-            string titulo = "Seleccione un usuario para chatear";
-            Visibility finalizar = Visibility.Hidden;
-            bool enviar = false;
-            bool msj = false;
-            if (conversacionActiva)
-            {
-                titulo = userName;
-                finalizar = Visibility.Visible;
-                enviar = true;
-                msj = true;
-            }
-            TituloChat.Text = titulo;
-            btnFinalizar.Visibility = finalizar;
-            btnEnviar.IsEnabled = enviar;
-            txtMsg.IsEnabled = msj;
-        }
-
         private void CompletarGrillaChat()
         {
             dgChat.ItemsSource = controlerCliente.GetMensajes();
             dgChat.Items.Refresh();
         }
 
-        private void MostrarError(string mensaje)
+        private void MostrarError(string mensaje, bool isErrorDeConexion)
         {
             Error = new Error();
             Error.MostrarError(mensaje);
             Error.Show();
+            if (isErrorDeConexion)
+            {
+                System.Threading.Thread.Sleep(3000);
+                Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+                Application.Current.Shutdown();
+            }
         }
 
         private void btnFinalizar_Click(object sender, RoutedEventArgs e)
@@ -262,11 +217,13 @@ namespace CHAT.Vista
             try
             {
                 controlerCliente.FinalizarConversacion();
-                RefrescarPantallaConConversacion(String.Empty, true, false, true);
+                RefrescarAccionesYTitulos();
+                RefrescarUsuariosConectados();
+                CompletarGrillaChat();
             }
             catch (ExceptionServer ex)
             {
-                MostrarError(ex.Message);
+                MostrarError(ex.Message, true);
             }
         }
 
@@ -277,11 +234,13 @@ namespace CHAT.Vista
                 Button btnChat = (Button)sender;
                 Usuario user = (Usuario)btnChat.DataContext;
                 controlerCliente.IniciarChat(user.Id);
-                RefrescarPantallaConConversacion(user.UserName, true, true, true);
+                RefrescarAccionesYTitulos();
+                RefrescarUsuariosConectados();
+                CompletarGrillaChat();
             }
             catch (ExceptionServer ex)
             {
-                MostrarError(ex.Message);
+                MostrarError(ex.Message, true);
             }
         }
 
@@ -298,8 +257,42 @@ namespace CHAT.Vista
             }
             catch (ExceptionServer ex)
             {
-                MostrarError(ex.Message);
+                MostrarError(ex.Message, true);
             }
+        }
+
+        private void RefrescarUsuariosConectados()
+        {
+            if (!controlerCliente.IsConversacionActiva() && IsUsuarioLogueado())
+            {
+                CompletarGrillaUsuarios(controlerCliente.UsuariosConectados());
+            }
+            else CompletarGrillaUsuarios(new List<Usuario>());
+        }
+
+        private void RefrescarAccionesYTitulos()
+        {
+            if (controlerCliente.IsConversacionActiva())
+            {
+                TituloChat.Text = controlerCliente.UsuarioConversando().UserName;
+                btnFinalizar.Visibility = Visibility.Visible;
+                btnEnviar.IsEnabled = true;
+                txtMsg.IsEnabled = true;
+            }
+            else
+            {
+                if (IsUsuarioLogueado())
+                {
+                    if (controlerCliente.UsuariosConectados().Count != 0) TituloChat.Text = SELECCIONE_USUARIO;
+                    else TituloChat.Text = SIN_USUARIOS;
+                }
+                else TituloChat.Text = INICIE_SESION;
+                btnFinalizar.Visibility = Visibility.Hidden;
+                btnEnviar.IsEnabled = false;
+                txtMsg.IsEnabled = false;
+            }
+            if (IsUsuarioLogueado()) btnLogin.Content = DESLOGUEAR;
+            else btnLogin.Content = LOGUEAR;
         }
     }
 }

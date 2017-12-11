@@ -81,7 +81,6 @@ namespace CHAT.Controlador
             {
                 MiddlewareServer.EnviarRequestAlServidor(EnumProtocolo.Codigo.CERRAR_SESION, String.Empty, String.Empty);
                 Cliente.DesLoguear();
-
             }
             catch (ExceptionUserAware)
             {
@@ -183,6 +182,12 @@ namespace CHAT.Controlador
                 Cliente.FinalizarConversacion();
             }
             return conversacionNueva;
+        }
+
+        public void CerrarConexion()
+        {
+            if (IsConversacionActiva()) FinalizarConversacion();
+            MiddlewareServer.EnviarRequestAlServidor(EnumProtocolo.Codigo.DESCONECTAR, String.Empty, String.Empty);
         }
     }
 }

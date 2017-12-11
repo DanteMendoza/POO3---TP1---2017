@@ -32,7 +32,7 @@
                                     <DataGridTemplateColumn Width="*" >
                                         <DataGridTemplateColumn.CellTemplate >
                                             <DataTemplate >
-                                                <TextBlock Text="{Binding MensajeRecibido}" Background="#FFD47CF5" Foreground="Black" Visibility="{Binding IsRecibidoVisible}"></TextBlock>
+                                                <TextBlock Text="{Binding MensajeRecibido}" HorizontalAlignment="Left" Background="#FFD47CF5" Foreground="Black" Visibility="{Binding IsRecibidoVisible}"></TextBlock>
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
