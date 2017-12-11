@@ -12,11 +12,6 @@ namespace CHAT.Controlador
     {
         private Cliente Cliente { get; set; }
 
-        //public IList<Usuario> UsuariosConectados()
-        //{
-        //    return Cliente.UsuariosConectados;
-        //}
-
         public IList<Usuario> UsuariosConectados()
         {
             return Cliente.GetUsuariosConectados();
@@ -31,11 +26,6 @@ namespace CHAT.Controlador
         {
             return Cliente.GetMensajes();
         }
-
-        //public Usuario UsuarioConversando()
-        //{
-        //    return Cliente.Conversacion.UsuarioConversando;
-        //}
 
         public Usuario UsuarioConversando()
         {
@@ -61,14 +51,22 @@ namespace CHAT.Controlador
         public void Loguearse(string userName)
         {
             string response = MiddlewareServer.EnviarRequestAlServidor(EnumProtocolo.Codigo.LOGIN, userName, "1234");
-            //Cliente.UsuarioLogueado = new Usuario(userName, int.Parse(response));
             Cliente.SetUsuarioLogueado(new Usuario(userName, int.Parse(response)));
         }
 
-        public void VerUsuariosConectados()
+        public bool VerUsuariosConectados()
         {
-            string response = MiddlewareServer.EnviarRequestAlServidor(EnumProtocolo.Codigo.VER_USUARIOS_CONECTADOS, String.Empty, String.Empty);
-            Cliente.SetUsuariosConectados(MiddlewareServer.ArmarListaDeUsuarios(response));
+            try
+            {
+                string response = MiddlewareServer.EnviarRequestAlServidor(EnumProtocolo.Codigo.VER_USUARIOS_CONECTADOS, String.Empty, String.Empty);
+                Cliente.SetUsuariosConectados(MiddlewareServer.ArmarListaDeUsuarios(response));
+
+            }
+            catch (ExceptionUserAware)
+            {
+                return false;
+            }
+            return true;
         }
 
         public void VerUsuarios()
@@ -77,20 +75,39 @@ namespace CHAT.Controlador
             Cliente.Usuarios = MiddlewareServer.ArmarListaDeUsuarios(response);
         }
 
-        public void Desloguearse()
+        public bool Desloguearse()
         {
-            MiddlewareServer.EnviarRequestAlServidor(EnumProtocolo.Codigo.CERRAR_SESION, String.Empty, String.Empty);
-            Cliente.DesLoguear();
+            try
+            {
+                MiddlewareServer.EnviarRequestAlServidor(EnumProtocolo.Codigo.CERRAR_SESION, String.Empty, String.Empty);
+                Cliente.DesLoguear();
+
+            }
+            catch (ExceptionUserAware)
+            {
+                return false;
+            }
+            return true;
         }
 
-        public void IniciarChat(int idUser)
+        public bool IniciarChat(int idUser)
         {
-            string respuesta = MiddlewareServer.EnviarRequestAlServidor(EnumProtocolo.Codigo.INICIO_CHAT, idUser.ToString(), String.Empty);
-            int idConversacion = int.Parse(respuesta);
-            Cliente.IniciarConversacion(idUser, idConversacion);
+            try
+            {
+                string respuesta = MiddlewareServer.EnviarRequestAlServidor(EnumProtocolo.Codigo.INICIO_CHAT, idUser.ToString(), String.Empty);
+                int idConversacion = int.Parse(respuesta);
+                Cliente.IniciarConversacion(idUser, idConversacion);
+
+            }
+            catch (ExceptionUserAware)
+            {
+                return false;
+            }
+            return true;
+
         }
 
-        public void EnviarMsg(string mensaje)
+        public bool EnviarMsg(string mensaje)
         {
             try
             {
@@ -99,10 +116,12 @@ namespace CHAT.Controlador
             }
             catch (ExceptionUserAware)
             {
+                return false;
             }
+            return true;
         }
 
-        public void FinalizarConversacion()
+        public bool FinalizarConversacion()
         {
             try
             {
@@ -112,12 +131,23 @@ namespace CHAT.Controlador
             }
             catch (ExceptionUserAware)
             {
+                return false;
             }
+            return true;
         }
 
-        public void CrearUsuario(string userName)
+        public bool CrearUsuario(string userName)
         {
-            MiddlewareServer.EnviarRequestAlServidor(EnumProtocolo.Codigo.CREAR_USUARIO, userName, String.Empty);
+            try
+            {
+                MiddlewareServer.EnviarRequestAlServidor(EnumProtocolo.Codigo.CREAR_USUARIO, userName, String.Empty);
+
+            }
+            catch (ExceptionUserAware)
+            {
+                return false;
+            }
+            return true;
         }
 
         public void RecibirMensajes()
@@ -143,7 +173,7 @@ namespace CHAT.Controlador
             try
             {
                 string respuesta = MiddlewareServer.EnviarRequestAlServidor(EnumProtocolo.Codigo.IS_CONVERSACION_EXISTENTE, String.Empty, String.Empty);
-                string[] respuestaSplit= respuesta.Split(' ');
+                string[] respuestaSplit = respuesta.Split(' ');
                 int idUsuario = int.Parse(respuestaSplit[0]);
                 int idConversacion = int.Parse(respuestaSplit[1]);
                 conversacionNueva = Cliente.IniciarConversacion(idUsuario, idConversacion);

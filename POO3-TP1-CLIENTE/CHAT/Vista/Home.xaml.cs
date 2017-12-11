@@ -108,6 +108,12 @@ namespace CHAT.Vista
                 return;
             }
 
+            catch (ExceptionUserAware ex)
+            {
+                login.MostrarErrores(ex.Message, Visibility.Visible);
+                return;
+            }
+
             try
             {
                 //Le pido al servidor los usuarios
