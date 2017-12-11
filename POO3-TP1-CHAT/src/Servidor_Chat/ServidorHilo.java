@@ -261,7 +261,7 @@ public class ServidorHilo extends Thread {
     		if(idOtroUsuario == aux) { 
     				this.server.getConexionDB().consultaActualiza("DELETE FROM mensajes WHERE id_conversacion = " + this.convDelUsuario + ";"); //borro los mensajes que pertenescan a la conversacion a eliminar
     				this.convDelUsuario = 0; //elimino la referencia
-    				this.server.getConexionDB().consultaActualiza("DELETE FROM conversaciones WHERE Id_usuario2_fk = " + aux + "OR Id_usuario1_fk = " + aux + ";");
+    				this.server.getConexionDB().consultaActualiza("DELETE FROM conversaciones WHERE Id_usuario2_fk = " + aux + " OR Id_usuario1_fk = " + aux + ";");
     	    		System.out.println("[DS] Peticion de desconexion de " + this.threadID  + " --> " + aux + "\n");
     				escrituraConsCliente.writeUTF("OK " + "DESCONECC " + this.threadID + " <====X====> " + idOtroUsuario + "\n");
     		}else {
@@ -286,7 +286,7 @@ public class ServidorHilo extends Thread {
     		System.out.println("[LU] Peticion de desconexion de " + this.threadID  + "\n");
     		this.server.getConexionDB().consultaActualiza("DELETE FROM mensajes WHERE id_conversacion = " + this.convDelUsuario + ";"); //borro los mensajes que pertenescan a la conversacion a eliminar
     		this.convDelUsuario = 0; //elimino la referencia
-    		this.server.getConexionDB().consultaActualiza("DELETE FROM conversaciones WHERE Id_usuario2_fk = " + this.threadID + "OR Id_usuario1_fk = " + this.threadID + ";"); //Elimina las conversaciones en las que aparesca yo
+    		this.server.getConexionDB().consultaActualiza("DELETE FROM conversaciones WHERE Id_usuario2_fk = " + this.threadID + " OR Id_usuario1_fk = " + this.threadID + ";"); //Elimina las conversaciones en las que aparesca yo
     		this.server.retirarUsuarioConectadoPorID(this.threadID); //retiro mi user de la lista de conectados
     		this.mensajesRecibidos.clear(); //borro la lista de mensajes recibidos
     		this.usuarioThread = new Usuarios(); //reinicio mi objeto usuario borrando sus datos
